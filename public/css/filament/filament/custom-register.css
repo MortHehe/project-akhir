@@ -1,0 +1,132 @@
+/* Custom Filament Registration Styling */
+
+/* Center the registration card */
+.fi-simple-layout {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Style the registration card */
+.fi-simple-main {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    max-width: 450px;
+    width: 100%;
+}
+
+/* Header styling */
+.fi-simple-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.fi-simple-heading {
+    font-size: 32px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+}
+
+/* Form field styling */
+.fi-fo-field-wrp {
+    margin-bottom: 20px;
+}
+
+.fi-fo-field-wrp-label {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.fi-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.fi-input:focus {
+    outline: none;
+    border-color: #000;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Checkbox styling */
+.fi-fo-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.fi-fo-checkbox-label {
+    font-size: 14px;
+    color: #555;
+}
+
+.fi-fo-helper-text {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+}
+
+/* Submit button styling */
+.fi-btn-primary {
+    width: 100%;
+    padding: 14px 24px;
+    background-color: #000;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.fi-btn-primary:hover {
+    background-color: #333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.fi-btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Link styling */
+.fi-simple-footer {
+    text-align: center;
+    margin-top: 24px;
+}
+
+.fi-link {
+    color: #000;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+}
+
+.fi-link:hover {
+    opacity: 0.7;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    .fi-simple-main {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .fi-simple-heading {
+        font-size: 28px;
+    }
+}
