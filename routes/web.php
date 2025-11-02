@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\FreelancerController;
 
 
 // Public routes
@@ -96,36 +98,54 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('role:admin');
 });
 
-// Review Routes (Requires Authentication)
+
+// Review routes for freelancers
 Route::middleware(['auth'])->group(function () {
-    // Review CRUD
-    Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
-    Route::get('/orders/{order}/review/create', [ReviewController::class, 'create'])->name('reviews.create');
-    Route::post('/orders/{order}/review', [ReviewController::class, 'store'])->name('reviews.store');
-    Route::get('/reviews/{review}', [ReviewController::class, 'show'])->name('reviews.show');
-    Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
-    Route::patch('/reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
-    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
     
-    // Review Actions
+    // View all reviews (for freelancers)
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+    
+    // View single review
+    Route::get('/reviews/{review}', [ReviewController::class, 'show'])->name('reviews.show');
+    
+    // Mark review as helpful
     Route::post('/reviews/{review}/helpful', [ReviewController::class, 'markHelpful'])->name('reviews.helpful');
     
-    // Admin Only
-    Route::middleware('role:admin')->group(function () {
-        Route::patch('/reviews/{review}/verify', [ReviewController::class, 'verify'])->name('reviews.verify');
-        Route::patch('/reviews/{review}/toggle-publish', [ReviewController::class, 'togglePublish'])->name('reviews.togglePublish');
-    });
+    // Create review (for clients)
+    Route::get('/orders/{order}/review/create', [ReviewController::class, 'create'])->name('reviews.create');
+    Route::post('/orders/{order}/review', [ReviewController::class, 'store'])->name('reviews.store');
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    
+    // ==================== SETTINGS ====================
+    Route::get('/freelancer/settings', [FreelancerController::class, 'settings'])->name('freelancer.settings');
+    Route::patch('/freelancer/settings', [FreelancerController::class, 'updateSettings'])->name('freelancer.settings.update');
+    Route::patch('/freelancer/password', [FreelancerController::class, 'updatePassword'])->name('freelancer.password.update');
+    Route::patch('/freelancer/notifications', [FreelancerController::class, 'updateNotifications'])->name('freelancer.notifications.update');
+    Route::delete('/freelancer/account', [FreelancerController::class, 'deleteAccount'])->name('freelancer.account.delete');
+    
+    // ==================== EARNINGS ====================
+    Route::get('/freelancer/earnings', [FreelancerController::class, 'earnings'])->name('freelancer.earnings');
+    Route::post('/freelancer/withdraw', [FreelancerController::class, 'withdraw'])->name('freelancer.withdraw');
+    
+    // ==================== PROFILE ====================
+    Route::get('/freelancer/profile', [FreelancerController::class, 'profile'])->name('freelancer.profile');
+    Route::patch('/freelancer/profile', [FreelancerController::class, 'updateProfile'])->name('freelancer.profile.update');
+    Route::post('/freelancer/skills', [FreelancerController::class, 'updateSkills'])->name('freelancer.skills.update');
+    
 });
 
 // Public Routes
-Route::get('/freelancer/{freelancer}/reviews', [ReviewController::class, 'freelancerReviews'])->name('freelancer.reviews');
+Route::get('/freelancer/{freelancer}/reviews', [ReviewController::class, 'freelancerReviews'])->name('freelancer.index');
 
 
 Route::get('/projects', function() {
-    return view('projects.index');
-})->name('projects.index')->middleware('auth');
+    return view('user.index');
+})->name('user.index')->middleware('auth');
 
 Route::get('/orders', function() {
-    return view('orders.index');
-})->name('orders.index')->middleware('auth');
+    return view('freelancer.index');
+})->name('freelancer.index')->middleware('auth');
 

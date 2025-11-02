@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Review;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,24 +13,60 @@ class ReviewController extends Controller
     /**
      * Display a listing of reviews
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         
         if ($user->isFreelancer()) {
             // Freelancer sees reviews they received
-            $reviews = Review::with(['user', 'order'])
+            $query = Review::with(['user', 'order'])
                 ->where('freelancer_id', $user->id)
-                ->published()
-                ->latest()
-                ->paginate(20);
+                ->published();
         } else {
             // Users see reviews they wrote
-            $reviews = Review::with(['freelancer', 'order'])
-                ->where('user_id', $user->id)
-                ->latest()
-                ->paginate(20);
+            $query = Review::with(['freelancer', 'order'])
+                ->where('user_id', $user->id);
         }
+        
+        // Apply rating filter
+        if ($request->filled('rating')) {
+            $query->where('rating', $request->rating);
+        }
+        
+        // Apply verification filter
+        if ($request->filled('verified')) {
+            $query->where('is_verified', $request->verified);
+        }
+        
+        // Apply search filter (search in title and comment)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('comment', 'like', "%{$search}%");
+            });
+        }
+        
+        // Apply sorting
+        $sort = $request->get('sort', 'latest');
+        switch ($sort) {
+            case 'oldest':
+                $query->oldest();
+                break;
+            case 'highest':
+                $query->orderBy('rating', 'desc');
+                break;
+            case 'lowest':
+                $query->orderBy('rating', 'asc');
+                break;
+            case 'latest':
+            default:
+                $query->latest();
+                break;
+        }
+        
+        // Paginate results
+        $reviews = $query->paginate(20)->withQueryString();
         
         return view('reviews.index', compact('reviews'));
     }

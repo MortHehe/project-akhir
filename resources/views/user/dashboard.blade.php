@@ -400,10 +400,10 @@
             <nav class="menu">
                 <div class="menu-section">
                     <div class="menu-label">Menu</div>
-                    <a href="{{ route('freelancer.dashboard') }}" class="menu-item active">
+                    <a href="{{ route('user.dashboard') }}" class="menu-item active">
                         <span>📊</span> Dashboard
                     </a>
-                    <a href="{{ route('projects.index') }}" class="menu-item">
+                    <a href="{{ route('user.index') }}" class="menu-item">
                         <span>📦</span> My Project
                     </a>
                     <a href="{{ route('reviews.index') }}" class="menu-item">
@@ -436,7 +436,7 @@
                     <span>▼</span>
                     
                     <div class="dropdown-menu">
-                        <a href="{{ route('freelancer.dashboard') }}" class="dropdown-item">
+                        <a href="{{ route('user.dashboard') }}" class="dropdown-item">
                             <span>📊</span> Dashboard
                         </a>
                         <a href="#" class="dropdown-item">
@@ -520,7 +520,7 @@
                             <p style="color: #999; text-align: center; padding: 20px;">No orders yet</p>
                         @endforelse
                     </ul>
-                    <a href="{{ route('orders.index') }}" style="display: block; text-align: center; margin-top: 15px; color: #667eea; font-weight: 600;">View All Orders →</a>
+                    <a href="{{ route('user.index') }}" style="display: block; text-align: center; margin-top: 15px; color: #667eea; font-weight: 600;">View All Orders →</a>
                 </div>
                 
                 <div class="card">

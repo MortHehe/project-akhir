@@ -465,10 +465,10 @@
             <nav class="menu">
                 <div class="menu-section">
                     <div class="menu-label">Menu</div>
-                    <a href="{{ route('freelancer.dashboard') }}" class="menu-item">
+                    <a href="{{ route('user.dashboard') }}" class="menu-item">
                         <span>📊</span> Dashboard
                     </a>
-                    <a href="{{ route('orders.index') }}" class="menu-item active">
+                    <a href="{{ route('user.index') }}" class="menu-item active">
                         <span>📦</span> My Orders
                     </a>
                     <a href="{{ route('reviews.index') }}" class="menu-item">

@@ -2,8 +2,6 @@
 
 namespace App\Http\Middleware;
 
-namespace App\Http\Middleware;
-
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,6 +29,6 @@ class CheckRole
         }
 
         // If the user has the correct role, proceed to the next request
-        return $next($request);
+        return $next($request);  // This line lets the request pass to the next middleware or controller
     }
 }

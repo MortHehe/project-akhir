@@ -403,7 +403,7 @@
                     <a href="{{ route('freelancer.dashboard') }}" class="menu-item active">
                         <span>📊</span> Dashboard
                     </a>
-                    <a href="{{ route('orders.index') }}" class="menu-item">
+                    <a href="{{ route('freelancer.index') }}" class="menu-item">
                         <span>📦</span> My Orders
                     </a>
                     <a href="{{ route('reviews.index') }}" class="menu-item">
@@ -413,13 +413,13 @@
                 
                 <div class="menu-section">
                     <div class="menu-label">Others</div>
-                    <a href="#" class="menu-item">
+                    <a href="{{ route('freelancer.settings') }}" class="menu-item">
                         <span>⚙️</span> Settings
                     </a>
-                    <a href="#" class="menu-item">
-                        <span>💰</span> Earnings
+                    <a href="{{ route('freelancer.earnings') }}" class="menu-item">
+                        <span>💰</span> Withdraw
                     </a>
-                    <a href="#" class="menu-item">
+                    <a href="{{ route('freelancer.profile') }}" class="menu-item">
                         <span>👤</span> Profile
                     </a>
                 </div>
@@ -520,7 +520,7 @@
                             <p style="color: #999; text-align: center; padding: 20px;">No orders yet</p>
                         @endforelse
                     </ul>
-                    <a href="{{ route('orders.index') }}" style="display: block; text-align: center; margin-top: 15px; color: #667eea; font-weight: 600;">View All Orders →</a>
+                    <a href="{{ route('freelancer.index') }}" style="display: block; text-align: center; margin-top: 15px; color: #667eea; font-weight: 600;">View All Orders →</a>
                 </div>
                 
                 <div class="card">
