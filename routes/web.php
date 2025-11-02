@@ -119,3 +119,13 @@ Route::middleware(['auth'])->group(function () {
 
 // Public Routes
 Route::get('/freelancer/{freelancer}/reviews', [ReviewController::class, 'freelancerReviews'])->name('freelancer.reviews');
+
+
+Route::get('/projects', function() {
+    return view('projects.index');
+})->name('projects.index')->middleware('auth');
+
+Route::get('/orders', function() {
+    return view('orders.index');
+})->name('orders.index')->middleware('auth');
+

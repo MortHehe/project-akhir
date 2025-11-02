@@ -27,11 +27,12 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->registration()
+            // ->registration()
             ->authGuard('web')
             ->authMiddleware([
-            Authenticate::class,
-        ])
+                Authenticate::class, // Ensure the user is authenticated
+                \App\Http\Middleware\CheckRole::class . ':admin', // Check for the 'admin' role
+            ])
             ->colors([
                 'primary' => Color::Slate,
             ])

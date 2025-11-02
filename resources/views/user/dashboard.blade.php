@@ -403,8 +403,8 @@
                     <a href="{{ route('freelancer.dashboard') }}" class="menu-item active">
                         <span>📊</span> Dashboard
                     </a>
-                    <a href="{{ route('orders.index') }}" class="menu-item">
-                        <span>📦</span> My Orders
+                    <a href="{{ route('projects.index') }}" class="menu-item">
+                        <span>📦</span> My Project
                     </a>
                     <a href="{{ route('reviews.index') }}" class="menu-item">
                         <span>⭐</span> Reviews

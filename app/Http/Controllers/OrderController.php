@@ -2,239 +2,186 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Review;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class ReviewController extends Controller
+class OrderController extends Controller
 {
     /**
-     * Display a listing of reviews
+     * Display a listing of orders for authenticated user
      */
     public function index()
     {
         $user = Auth::user();
         
-        if ($user->isFreelancer()) {
-            // Freelancer sees reviews they received
-            $reviews = Review::with(['user', 'order'])
+        if ($user->isAdmin()) {
+            // Admin sees all orders
+            $orders = Order::with(['user', 'freelancer'])
+                ->latest()
+                ->paginate(20);
+        } elseif ($user->isFreelancer()) {
+            // Freelancer sees their assigned orders
+            $orders = Order::with(['user'])
                 ->where('freelancer_id', $user->id)
-                ->published()
+                ->orWhere('freelancer_email', $user->email)
                 ->latest()
                 ->paginate(20);
         } else {
-            // Users see reviews they wrote
-            $reviews = Review::with(['freelancer', 'order'])
+            // User sees their created orders
+            $orders = Order::with(['freelancer'])
                 ->where('user_id', $user->id)
                 ->latest()
                 ->paginate(20);
         }
         
-        return view('reviews.index', compact('reviews'));
+        return view('orders.index', compact('orders'));
     }
 
     /**
-     * Show the form for creating a new review
+     * Show the form for creating a new order
      */
-    public function create(Order $order)
+    public function create()
     {
-        // Check if user owns the order
-        if ($order->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized');
-        }
-        
-        // Check if order is completed
-        if (!$order->isCompleted()) {
-            return back()->with('error', 'You can only review completed orders.');
-        }
-        
-        // Check if already reviewed
-        if ($order->hasReview()) {
-            return back()->with('error', 'You have already reviewed this order.');
-        }
-        
-        return view('reviews.create', compact('order'));
+        $freelancers = User::where('role', 'freelancer')->get();
+        return view('orders.create', compact('freelancers'));
     }
 
     /**
-     * Store a newly created review
+     * Store a newly created order
      */
-    public function store(Request $request, Order $order)
+    public function store(Request $request)
     {
-        // Validate
         $validated = $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'title' => 'nullable|string|max:255',
-            'comment' => 'required|string|max:2000',
-            'quality_rating' => 'nullable|integer|min:1|max:5',
-            'communication_rating' => 'nullable|integer|min:1|max:5',
-            'deadline_rating' => 'nullable|integer|min:1|max:5',
-            'professionalism_rating' => 'nullable|integer|min:1|max:5',
+            'job_title' => 'required|string|max:255',
+            'job_description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'freelancer_email' => 'nullable|email',
+            'deadline' => 'nullable|date|after:today',
+            'requirements' => 'nullable|string',
         ]);
 
-        // Authorization checks
-        if ($order->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized');
-        }
-        
-        if (!$order->isCompleted()) {
-            return back()->with('error', 'You can only review completed orders.');
-        }
-        
-        if ($order->hasReview()) {
-            return back()->with('error', 'You have already reviewed this order.');
-        }
-
-        // Create review
-        $review = Review::create([
-            'order_id' => $order->id,
+        $order = Order::create([
             'user_id' => Auth::id(),
-            'freelancer_id' => $order->freelancer_id,
-            'rating' => $validated['rating'],
-            'title' => $validated['title'] ?? null,
-            'comment' => $validated['comment'],
-            'quality_rating' => $validated['quality_rating'] ?? null,
-            'communication_rating' => $validated['communication_rating'] ?? null,
-            'deadline_rating' => $validated['deadline_rating'] ?? null,
-            'professionalism_rating' => $validated['professionalism_rating'] ?? null,
-            'is_published' => true,
+            'job_title' => $validated['job_title'],
+            'job_description' => $validated['job_description'] ?? null,
+            'price' => $validated['price'],
+            'freelancer_email' => $validated['freelancer_email'] ?? null,
+            'deadline' => $validated['deadline'] ?? null,
+            'requirements' => $validated['requirements'] ?? null,
+            'status' => 'pending',
         ]);
 
         return redirect()->route('orders.show', $order)
-            ->with('success', 'Thank you for your review!');
+            ->with('success', 'Order created successfully!');
     }
 
     /**
-     * Display the specified review
+     * Display the specified order
      */
-    public function show(Review $review)
+    public function show(Order $order)
     {
-        $review->load(['user', 'freelancer', 'order']);
+        // Check authorization
+        $user = Auth::user();
         
-        return view('reviews.show', compact('review'));
-    }
-
-    /**
-     * Show the form for editing the review
-     */
-    public function edit(Review $review)
-    {
-        // Only review author can edit
-        if ($review->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized');
-        }
-        
-        $review->load('order');
-        
-        return view('reviews.edit', compact('review'));
-    }
-
-    /**
-     * Update the review
-     */
-    public function update(Request $request, Review $review)
-    {
-        // Authorization
-        if ($review->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized');
+        if (!$user->isAdmin() && 
+            $order->user_id !== $user->id && 
+            $order->freelancer_id !== $user->id) {
+            abort(403, 'Unauthorized access to this order.');
         }
 
+        $order->load(['user', 'freelancer']);
+        
+        return view('orders.show', compact('order'));
+    }
+
+    /**
+     * Update order status
+     */
+    public function updateStatus(Request $request, Order $order)
+    {
         $validated = $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'title' => 'nullable|string|max:255',
-            'comment' => 'required|string|max:2000',
-            'quality_rating' => 'nullable|integer|min:1|max:5',
-            'communication_rating' => 'nullable|integer|min:1|max:5',
-            'deadline_rating' => 'nullable|integer|min:1|max:5',
-            'professionalism_rating' => 'nullable|integer|min:1|max:5',
+            'status' => 'required|in:pending,accepted,in_progress,completed,cancelled,rejected',
         ]);
 
-        $review->update($validated);
-
-        return redirect()->route('reviews.show', $review)
-            ->with('success', 'Review updated successfully!');
-    }
-
-    /**
-     * Mark review as helpful
-     */
-    public function markHelpful(Review $review)
-    {
-        $review->increment('helpful_count');
+        $user = Auth::user();
         
-        return back()->with('success', 'Thanks for your feedback!');
-    }
-
-    /**
-     * Admin: Verify review
-     */
-    public function verify(Review $review)
-    {
-        if (!Auth::user()->isAdmin()) {
+        // Authorization checks
+        if ($user->isFreelancer() && $order->freelancer_id !== $user->id) {
             abort(403, 'Unauthorized');
         }
         
-        $review->update(['is_verified' => true]);
-        
-        return back()->with('success', 'Review verified!');
-    }
-
-    /**
-     * Admin: Toggle publish status
-     */
-    public function togglePublish(Review $review)
-    {
-        if (!Auth::user()->isAdmin()) {
+        if ($user->isUser() && $order->user_id !== $user->id) {
             abort(403, 'Unauthorized');
         }
-        
-        $review->update(['is_published' => !$review->is_published]);
-        
-        return back()->with('success', 'Review status updated!');
-    }
 
-    /**
-     * Delete review (admin or author)
-     */
-    public function destroy(Review $review)
-    {
-        // Only admin or review author can delete
-        if (!Auth::user()->isAdmin() && $review->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized');
+        // Update timestamps based on status
+        if ($validated['status'] === 'accepted' && !$order->accepted_at) {
+            $order->accepted_at = now();
         }
         
-        $review->delete();
-        
-        return redirect()->route('reviews.index')
-            ->with('success', 'Review deleted successfully!');
+        if ($validated['status'] === 'completed' && !$order->completed_at) {
+            $order->completed_at = now();
+        }
+
+        $order->update(['status' => $validated['status']]);
+
+        return back()->with('success', 'Order status updated successfully!');
     }
 
     /**
-     * Get freelancer reviews (public)
+     * Assign freelancer to order
      */
-    public function freelancerReviews($freelancerId)
+    public function assignFreelancer(Request $request, Order $order)
     {
-        $freelancer = User::findOrFail($freelancerId);
+        $validated = $request->validate([
+            'freelancer_id' => 'required|exists:users,id',
+        ]);
+
+        $freelancer = User::findOrFail($validated['freelancer_id']);
         
         if (!$freelancer->isFreelancer()) {
-            abort(404, 'Freelancer not found');
+            return back()->with('error', 'Selected user is not a freelancer.');
         }
+
+        $order->update([
+            'freelancer_id' => $freelancer->id,
+            'freelancer_email' => $freelancer->email,
+        ]);
+
+        return back()->with('success', 'Freelancer assigned successfully!');
+    }
+
+    /**
+     * Cancel order
+     */
+    public function cancel(Order $order)
+    {
+        $user = Auth::user();
         
-        $reviews = Review::with(['user', 'order'])
-            ->where('freelancer_id', $freelancerId)
-            ->published()
-            ->latest()
-            ->paginate(20);
-        
-        $stats = [
-            'average_rating' => $freelancer->average_rating,
-            'total_reviews' => $freelancer->total_reviews,
-            'breakdown' => $freelancer->reviews_breakdown,
-            'distribution' => $freelancer->rating_distribution,
-            'detailed' => $freelancer->detailed_average_ratings,
-        ];
-        
-        return view('reviews.freelancer', compact('freelancer', 'reviews', 'stats'));
+        // Only user who created order or admin can cancel
+        if (!$user->isAdmin() && $order->user_id !== $user->id) {
+            abort(403, 'Unauthorized');
+        }
+
+        $order->update(['status' => 'cancelled']);
+
+        return back()->with('success', 'Order cancelled successfully!');
+    }
+
+    /**
+     * Delete order (admin only)
+     */
+    public function destroy(Order $order)
+    {
+        if (!Auth::user()->isAdmin()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $order->delete();
+
+        return redirect()->route('orders.index')
+            ->with('success', 'Order deleted successfully!');
     }
 }
