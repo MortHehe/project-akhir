@@ -403,23 +403,23 @@
                     <a href="{{ route('user.dashboard') }}" class="menu-item active">
                         <span>📊</span> Dashboard
                     </a>
-                    <a href="{{ route('user.index') }}" class="menu-item">
-                        <span>📦</span> My Project
+                    <a href="{{ route('user.projects') }}" class="menu-item">
+                        <span>📂</span> My Projects
                     </a>
-                    <a href="{{ route('reviews.index') }}" class="menu-item">
-                        <span>⭐</span> Reviews
+                    <a href="#" class="menu-item">
+                        <span>🔍</span> Find Freelancers
                     </a>
                 </div>
                 
                 <div class="menu-section">
                     <div class="menu-label">Others</div>
-                    <a href="#" class="menu-item">
+                    <a href="{{ route('user.settings') }}" class="menu-item">
                         <span>⚙️</span> Settings
                     </a>
-                    <a href="#" class="menu-item">
-                        <span>💰</span> Earnings
+                    <a href="{{ route('user.payments') }}" class="menu-item">
+                        <span>💰</span> Payments
                     </a>
-                    <a href="#" class="menu-item">
+                    <a href="{{ route('user.profile') }}" class="menu-item">
                         <span>👤</span> Profile
                     </a>
                 </div>
@@ -520,7 +520,7 @@
                             <p style="color: #999; text-align: center; padding: 20px;">No orders yet</p>
                         @endforelse
                     </ul>
-                    <a href="{{ route('user.index') }}" style="display: block; text-align: center; margin-top: 15px; color: #667eea; font-weight: 600;">View All Orders →</a>
+                    <a href="{{ route('user.projects') }}" style="display: block; text-align: center; margin-top: 15px; color: #667eea; font-weight: 600;">View All Orders →</a>
                 </div>
                 
                 <div class="card">

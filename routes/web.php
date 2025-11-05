@@ -5,9 +5,11 @@ use App\Http\Controllers\Auth\FreelancerRegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\FreelancerController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\FreelancerController;
+
 
 
 // Public routes
@@ -119,6 +121,33 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     
+    // ==================== USER/CLIENT DASHBOARD ====================
+    Route::get('/user/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
+    Route::get('/user/projects', [UserController::class, 'projects'])->name('user.projects');
+    Route::get('/user/find-freelancers', [UserController::class, 'findFreelancers'])->name('user.find-freelancers');
+    
+    // ==================== SETTINGS ====================
+    Route::get('/user/settings', [UserController::class, 'settings'])->name('user.settings');
+    Route::patch('/user/settings', [UserController::class, 'updateSettings'])->name('user.settings.update');
+    Route::patch('/user/password', [UserController::class, 'updatePassword'])->name('user.password.update');
+    Route::patch('/user/notifications', [UserController::class, 'updateNotifications'])->name('user.notifications.update');
+    Route::delete('/user/account', [UserController::class, 'deleteAccount'])->name('user.account.delete');
+    
+    // ==================== PAYMENTS ====================
+    Route::get('/user/payments', [UserController::class, 'payments'])->name('user.payments');
+    Route::post('/user/payment-method', [UserController::class, 'addPaymentMethod'])->name('user.payment.add');
+    Route::delete('/user/payment-method/{id}', [UserController::class, 'removePaymentMethod'])->name('user.payment.remove');
+    
+    // ==================== PROFILE ====================
+    Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile');
+    Route::patch('/user/profile', [UserController::class, 'updateProfile'])->name('user.profile.update');
+    Route::patch('/user/company', [UserController::class, 'updateCompany'])->name('user.company.update');
+    
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    
     // ==================== SETTINGS ====================
     Route::get('/freelancer/settings', [FreelancerController::class, 'settings'])->name('freelancer.settings');
     Route::patch('/freelancer/settings', [FreelancerController::class, 'updateSettings'])->name('freelancer.settings.update');
@@ -142,8 +171,8 @@ Route::get('/freelancer/{freelancer}/reviews', [ReviewController::class, 'freela
 
 
 Route::get('/projects', function() {
-    return view('user.index');
-})->name('user.index')->middleware('auth');
+    return view('user.projects');
+})->name('user.projects')->middleware('auth');
 
 Route::get('/orders', function() {
     return view('freelancer.index');

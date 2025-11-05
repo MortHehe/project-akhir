@@ -468,23 +468,23 @@
                     <a href="{{ route('user.dashboard') }}" class="menu-item">
                         <span>📊</span> Dashboard
                     </a>
-                    <a href="{{ route('user.index') }}" class="menu-item active">
-                        <span>📦</span> My Orders
+                    <a href="{{ route('user.projects') }}" class="menu-item active">
+                        <span>📂</span> My Projects
                     </a>
-                    <a href="{{ route('reviews.index') }}" class="menu-item">
-                        <span>⭐</span> Reviews
+                    <a href="{{ route('user.find-freelancers') }}" class="menu-item">
+                        <span>🔍</span> Find Freelancers
                     </a>
                 </div>
                 
                 <div class="menu-section">
                     <div class="menu-label">Others</div>
-                    <a href="#" class="menu-item">
+                    <a href="{{ route('user.settings') }}" class="menu-item">
                         <span>⚙️</span> Settings
                     </a>
-                    <a href="#" class="menu-item">
-                        <span>💰</span> Earnings
+                    <a href="{{ route('user.payments') }}" class="menu-item">
+                        <span>💰</span> Payment
                     </a>
-                    <a href="#" class="menu-item">
+                    <a href="{{ route('user.profile') }}" class="menu-item">
                         <span>👤</span> Profile
                     </a>
                 </div>

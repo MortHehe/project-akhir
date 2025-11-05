@@ -1,0 +1,8 @@
+TO DO :
+database (done)
+dashboard (done)
+login (done)
+
+review -> button -> create
+order -> button -> Create
+payment -> button -> Create
