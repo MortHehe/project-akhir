@@ -10,7 +10,46 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    // ... your existing code (fillable, hidden, casts, etc.) ...
+    /**
+     * The attributes that are mass assignable.
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'phone',
+        'location',
+        'company',
+        'industry',
+        'company_size',
+        'website',
+        'company_description',
+        'notification_settings',
+        'bio',
+        'skills',
+        'hourly_rate',
+        'availability',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
     /**
      * Get all reviews written by this user (as a client).
@@ -104,7 +143,7 @@ class User extends Authenticatable
     public function getReviewsBreakdownAttribute()
     {
         $total = $this->total_reviews;
-        
+
         if ($total === 0) {
             return [
                 'positive' => 0,
@@ -115,11 +154,11 @@ class User extends Authenticatable
                 'negative_percentage' => 0,
             ];
         }
-        
+
         $positive = $this->freelancerReviews()->where('rating', '>=', 4)->count();
         $neutral = $this->freelancerReviews()->where('rating', 3)->count();
         $negative = $this->freelancerReviews()->where('rating', '<=', 2)->count();
-        
+
         return [
             'positive' => $positive,
             'neutral' => $neutral,
@@ -148,7 +187,7 @@ class User extends Authenticatable
     public function getDetailedAverageRatingsAttribute()
     {
         $reviews = $this->freelancerReviews;
-        
+
         return [
             'quality' => round($reviews->avg('quality_rating') ?? 0, 1),
             'communication' => round($reviews->avg('communication_rating') ?? 0, 1),
@@ -171,5 +210,21 @@ class User extends Authenticatable
     public function isAdmin()
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Get messages sent by this user.
+     */
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    /**
+     * Get messages received by this user.
+     */
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
     }
 }

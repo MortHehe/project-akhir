@@ -20,15 +20,19 @@ class CheckRole
 
         // Check if the user has the required role
         if ($user->role !== $role) {
-            // Log the user out and clear the session
-            Auth::logout(); // Logs the user out
-            session()->flush(); // Clears all session data
-            
-            // Redirect with a 403 error
-            abort(403, 'Access denied. You do not have the required permissions.');
+            // Redirect to appropriate dashboard instead of logging out
+            if ($user->isFreelancer()) {
+                return redirect()->route('freelancer.dashboard');
+            }
+
+            if ($user->isAdmin()) {
+                return redirect('/admin');
+            }
+
+            return redirect()->route('user.dashboard');
         }
 
         // If the user has the correct role, proceed to the next request
-        return $next($request);  // This line lets the request pass to the next middleware or controller
+        return $next($request);
     }
 }

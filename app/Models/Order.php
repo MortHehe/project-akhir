@@ -18,6 +18,8 @@ class Order extends Model
         'price',
         'currency',
         'status',
+        'payment_method',
+        'paid_at',
         'deadline',
         'requirements',
         'notes',
@@ -28,6 +30,7 @@ class Order extends Model
     protected $casts = [
         'price' => 'decimal:2',
         'deadline' => 'date',
+        'paid_at' => 'datetime',
         'accepted_at' => 'datetime',
         'completed_at' => 'datetime',
         'created_at' => 'datetime',

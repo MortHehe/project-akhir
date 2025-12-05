@@ -9,6 +9,24 @@ use Illuminate\Validation\Rules\Password;
 
 class FreelancerController extends Controller
 {
+    // ==================== DASHBOARD ====================
+
+    /**
+     * Show the freelancer dashboard
+     */
+    public function dashboard()
+    {
+        return view('freelancer.dashboard');
+    }
+
+    /**
+     * Show orders list
+     */
+    public function index()
+    {
+        return view('freelancer.index');
+    }
+
     // ==================== SETTINGS ====================
     
     /**
@@ -168,10 +186,34 @@ class FreelancerController extends Controller
             'skills' => 'array',
             'skills.*' => 'string|max:50',
         ]);
-        
+
         // Store skills as JSON or in a separate table
         Auth::user()->update(['skills' => json_encode($validated['skills'] ?? [])]);
-        
+
         return back()->with('success', 'Skills updated successfully!');
+    }
+
+    /**
+     * Show public freelancer profile
+     */
+    public function showProfile($id)
+    {
+        $freelancer = \App\Models\User::where('role', 'freelancer')
+            ->where('id', $id)
+            ->firstOrFail();
+
+        // Get freelancer's reviews
+        $reviews = \App\Models\Review::where('freelancer_id', $id)
+            ->where('is_published', true)
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        // Get completed orders count
+        $completedOrders = \App\Models\Order::where('freelancer_id', $id)
+            ->where('status', 'completed')
+            ->count();
+
+        return view('freelancer.public-profile', compact('freelancer', 'reviews', 'completedOrders'));
     }
 }

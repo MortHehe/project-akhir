@@ -9,15 +9,31 @@ use App\Http\Controllers\FreelancerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\ChatController;
 
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
 
-
-// Public routes
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// Authentication routes (public - for guests only)
+Route::get('/welcome', function () {
+    return view('welcome');
+})->name('welcome');
+
+// Public freelancer browsing
+Route::get('/find-freelancers', [UserController::class, 'findFreelancers'])->name('find-freelancers');
+
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes (Guest Only)
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('guest')->group(function () {
     // Client Registration
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
@@ -32,10 +48,15 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
 });
 
-// Logout route (requires authentication)
+// Logout (requires auth)
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
-// Smart dashboard redirect route
+/*
+|--------------------------------------------------------------------------
+| Smart Dashboard Redirect
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/dashboard', function () {
     if (!Auth::check()) {
         return redirect('/login');
@@ -52,129 +73,183 @@ Route::get('/dashboard', function () {
     return redirect()->route('user.dashboard');
 })->name('dashboard');
 
-// User Dashboard (protected, only for authenticated users with role='user')
-Route::middleware(['auth', 'role:user'])->group(function () {
-    Route::get('/user/dashboard', function () {
-        return view('user.dashboard');
-    })->name('user.dashboard');
+/*
+|--------------------------------------------------------------------------
+| User/Client Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:user'])->prefix('user')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
     
-    Route::get('/user/profile', function () {
-        return view('user.profile');
-    })->name('user.profile');
+    // Find Freelancers
+    Route::get('/find-freelancers', [UserController::class, 'findFreelancers'])->name('user.find-freelancers');
+    
+    // Projects
+    Route::get('/projects', [UserController::class, 'projects'])->name('user.projects');
+    
+    // Orders
+    Route::get('/orders', [UserController::class, 'orders'])->name('user.orders');
+    
+    // Profile
+    Route::get('/profile', [UserController::class, 'profile'])->name('user.profile');
+    Route::patch('/profile', [UserController::class, 'updateProfile'])->name('user.profile.update');
+    Route::patch('/company', [UserController::class, 'updateCompany'])->name('user.company.update');
+    
+    // Settings
+    Route::get('/settings', [UserController::class, 'settings'])->name('user.settings');
+    Route::patch('/settings', [UserController::class, 'updateSettings'])->name('user.settings.update');
+    Route::patch('/password', [UserController::class, 'updatePassword'])->name('user.password.update');
+    Route::patch('/notifications', [UserController::class, 'updateNotifications'])->name('user.notifications.update');
+    Route::delete('/account', [UserController::class, 'deleteAccount'])->name('user.account.delete');
+    
+    // Payments
+    Route::get('/payments', [UserController::class, 'payments'])->name('user.payments');
 });
 
-// Freelancer Dashboard (protected, only for authenticated freelancers with role='freelancer')
-Route::middleware(['auth', 'role:freelancer'])->group(function () {
-    Route::get('/freelancer/dashboard', function () {
-        return view('freelancer.dashboard');
-    })->name('freelancer.dashboard');
-    
-    Route::get('/freelancer/profile', function () {
-        return view('freelancer.profile');
-    })->name('freelancer.profile');
-    
-    Route::get('/freelancer/jobs', function () {
-        return view('freelancer.jobs');
-    })->name('freelancer.jobs');
+/*
+|--------------------------------------------------------------------------
+| Debug Routes (REMOVE IN PRODUCTION)
+|--------------------------------------------------------------------------
+*/
+// Route::get('/debug-auth', function () {
+//     if (Auth::check()) {
+//         $user = Auth::user();
+//         return response()->json([
+//             'authenticated' => true,
+//             'user_id' => $user->id,
+//             'name' => $user->name,
+//             'email' => $user->email,
+//             'role' => $user->role,
+//             'isFreelancer' => $user->isFreelancer(),
+//         ]);
+//     }
+//     return response()->json(['authenticated' => false]);
+// });
+
+// Debug route to test freelancer dashboard without middleware
+Route::get('/debug-freelancer', function () {
+    return view('freelancer.dashboard');
 });
 
-// Admin routes are handled by Filament at /admin
-// Filament automatically protects these routes with authentication
+// Debug route WITH middleware to test
+Route::get('/debug-with-middleware', function () {
+    return response()->json([
+        'message' => 'Middleware passed!',
+        'user' => Auth::user()->name,
+        'role' => Auth::user()->role,
+    ]);
+})->middleware(['auth', 'role:freelancer']);
 
-// Order Management Routes (Requires Authentication)
-Route::middleware(['auth'])->group(function () {
-    // Orders CRUD
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+/*
+|--------------------------------------------------------------------------
+| Freelancer Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:freelancer'])->prefix('freelancer')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [FreelancerController::class, 'dashboard'])->name('freelancer.dashboard');
+
+    // Orders
+    Route::get('/orders', [FreelancerController::class, 'index'])->name('freelancer.index');
+
+    // Profile
+    Route::get('/profile', [FreelancerController::class, 'profile'])->name('freelancer.myprofile');
+    Route::patch('/profile', [FreelancerController::class, 'updateProfile'])->name('freelancer.myprofile.update');
+    Route::post('/skills', [FreelancerController::class, 'updateSkills'])->name('freelancer.skills.update');
     
-    // Order Status Updates
-    Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    Route::patch('/orders/{order}/assign', [OrderController::class, 'assignFreelancer'])->name('orders.assignFreelancer');
-    Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    // Earnings
+    Route::get('/earnings', [FreelancerController::class, 'earnings'])->name('freelancer.earnings');
+    Route::post('/withdraw', [FreelancerController::class, 'withdraw'])->name('freelancer.withdraw');
     
+    // Settings
+    Route::get('/settings', [FreelancerController::class, 'settings'])->name('freelancer.settings');
+    Route::patch('/settings', [FreelancerController::class, 'updateSettings'])->name('freelancer.settings.update');
+    Route::patch('/password', [FreelancerController::class, 'updatePassword'])->name('freelancer.password.update');
+    Route::patch('/notifications', [FreelancerController::class, 'updateNotifications'])->name('freelancer.notifications.update');
+    Route::delete('/account', [FreelancerController::class, 'deleteAccount'])->name('freelancer.account.delete');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Order Routes (Shared - Auth Required)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->prefix('orders')->group(function () {
+    // View orders (all authenticated users can view)
+    Route::get('/', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+    // Create orders (only regular users/clients can create orders)
+    Route::middleware('role:user')->group(function () {
+        Route::get('/create', [OrderController::class, 'create'])->name('orders.create');
+        Route::post('/', [OrderController::class, 'store'])->name('orders.store');
+
+        // Payment (only order owners can pay)
+        Route::get('/{order}/payment', [OrderController::class, 'payment'])->name('orders.payment');
+        Route::post('/{order}/payment', [OrderController::class, 'processPayment'])->name('orders.processPayment');
+
+        // Cancel (only order owners can cancel)
+        Route::patch('/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    });
+
+    // Status Updates (freelancers and clients can update status)
+    Route::patch('/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::patch('/{order}/assign', [OrderController::class, 'assignFreelancer'])->name('orders.assignFreelancer');
+
     // Admin Only
-    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])
-        ->name('orders.destroy')
-        ->middleware('role:admin');
+    Route::delete('/{order}', [OrderController::class, 'destroy'])->name('orders.destroy')->middleware('role:admin');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Review Routes (Auth Required)
+|--------------------------------------------------------------------------
+*/
 
-// Review routes for freelancers
 Route::middleware(['auth'])->group(function () {
-    
-    // View all reviews (for freelancers)
+    // View reviews
     Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
-    
-    // View single review
     Route::get('/reviews/{review}', [ReviewController::class, 'show'])->name('reviews.show');
     
-    // Mark review as helpful
+    // Mark helpful
     Route::post('/reviews/{review}/helpful', [ReviewController::class, 'markHelpful'])->name('reviews.helpful');
     
-    // Create review (for clients)
+    // Create review for order
     Route::get('/orders/{order}/review/create', [ReviewController::class, 'create'])->name('reviews.create');
     Route::post('/orders/{order}/review', [ReviewController::class, 'store'])->name('reviews.store');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Public Freelancer Profile & Reviews
+|--------------------------------------------------------------------------
+*/
 
-Route::middleware(['auth'])->group(function () {
-    
-    // ==================== USER/CLIENT DASHBOARD ====================
-    Route::get('/user/dashboard', [UserController::class, 'dashboard'])->name('user.dashboard');
-    Route::get('/user/projects', [UserController::class, 'projects'])->name('user.projects');
-    Route::get('/user/find-freelancers', [UserController::class, 'findFreelancers'])->name('user.find-freelancers');
-    
-    // ==================== SETTINGS ====================
-    Route::get('/user/settings', [UserController::class, 'settings'])->name('user.settings');
-    Route::patch('/user/settings', [UserController::class, 'updateSettings'])->name('user.settings.update');
-    Route::patch('/user/password', [UserController::class, 'updatePassword'])->name('user.password.update');
-    Route::patch('/user/notifications', [UserController::class, 'updateNotifications'])->name('user.notifications.update');
-    Route::delete('/user/account', [UserController::class, 'deleteAccount'])->name('user.account.delete');
-    
-    // ==================== PAYMENTS ====================
-    Route::get('/user/payments', [UserController::class, 'payments'])->name('user.payments');
-    Route::post('/user/payment-method', [UserController::class, 'addPaymentMethod'])->name('user.payment.add');
-    Route::delete('/user/payment-method/{id}', [UserController::class, 'removePaymentMethod'])->name('user.payment.remove');
-    
-    // ==================== PROFILE ====================
-    Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile');
-    Route::patch('/user/profile', [UserController::class, 'updateProfile'])->name('user.profile.update');
-    Route::patch('/user/company', [UserController::class, 'updateCompany'])->name('user.company.update');
-    
+// Public freelancer profile view (must be after authenticated freelancer routes)
+Route::get('/freelancer/{id}', [FreelancerController::class, 'showProfile'])->name('freelancer.profile');
+
+Route::get('/freelancer/{freelancer}/reviews', [ReviewController::class, 'freelancerReviews'])->name('freelancer.reviews');
+
+/*
+|--------------------------------------------------------------------------
+| Chat Routes (Auth Required)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->prefix('chat')->group(function () {
+    Route::get('/', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/{user}', [ChatController::class, 'show'])->name('chat.show');
+    Route::post('/{user}/send', [ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::get('/{user}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
+    Route::get('/unread/count', [ChatController::class, 'getUnreadCount'])->name('chat.unread');
 });
 
-
-Route::middleware(['auth'])->group(function () {
-    
-    // ==================== SETTINGS ====================
-    Route::get('/freelancer/settings', [FreelancerController::class, 'settings'])->name('freelancer.settings');
-    Route::patch('/freelancer/settings', [FreelancerController::class, 'updateSettings'])->name('freelancer.settings.update');
-    Route::patch('/freelancer/password', [FreelancerController::class, 'updatePassword'])->name('freelancer.password.update');
-    Route::patch('/freelancer/notifications', [FreelancerController::class, 'updateNotifications'])->name('freelancer.notifications.update');
-    Route::delete('/freelancer/account', [FreelancerController::class, 'deleteAccount'])->name('freelancer.account.delete');
-    
-    // ==================== EARNINGS ====================
-    Route::get('/freelancer/earnings', [FreelancerController::class, 'earnings'])->name('freelancer.earnings');
-    Route::post('/freelancer/withdraw', [FreelancerController::class, 'withdraw'])->name('freelancer.withdraw');
-    
-    // ==================== PROFILE ====================
-    Route::get('/freelancer/profile', [FreelancerController::class, 'profile'])->name('freelancer.profile');
-    Route::patch('/freelancer/profile', [FreelancerController::class, 'updateProfile'])->name('freelancer.profile.update');
-    Route::post('/freelancer/skills', [FreelancerController::class, 'updateSkills'])->name('freelancer.skills.update');
-    
-});
-
-// Public Routes
-Route::get('/freelancer/{freelancer}/reviews', [ReviewController::class, 'freelancerReviews'])->name('freelancer.index');
-
-
-Route::get('/projects', function() {
-    return view('user.projects');
-})->name('user.projects')->middleware('auth');
-
-Route::get('/orders', function() {
-    return view('freelancer.index');
-})->name('freelancer.index')->middleware('auth');
-
+/*
+|--------------------------------------------------------------------------
+| Admin Routes - Handled by Filament at /admin
+|--------------------------------------------------------------------------
+*/

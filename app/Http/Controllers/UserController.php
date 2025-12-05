@@ -102,44 +102,13 @@ class UserController extends Controller
     }
     
     // ==================== PAYMENTS ====================
-    
+
     /**
-     * Show the payments page
+     * Show the payments page (history only - payment processing via Stripe)
      */
     public function payments()
     {
         return view('user.payments');
-    }
-    
-    /**
-     * Add payment method
-     */
-    public function addPaymentMethod(Request $request)
-    {
-        $validated = $request->validate([
-            'type' => 'required|in:card,bank',
-            'card_number' => 'required_if:type,card',
-            'expiry_date' => 'required_if:type,card',
-            'cvv' => 'required_if:type,card',
-            'bank_name' => 'required_if:type,bank',
-            'account_number' => 'required_if:type,bank',
-        ]);
-        
-        // Store payment method (you may need a payment_methods table)
-        // PaymentMethod::create([...]);
-        
-        return back()->with('success', 'Payment method added successfully!');
-    }
-    
-    /**
-     * Remove payment method
-     */
-    public function removePaymentMethod($id)
-    {
-        // Remove payment method
-        // PaymentMethod::where('user_id', Auth::id())->where('id', $id)->delete();
-        
-        return back()->with('success', 'Payment method removed!');
     }
     
     // ==================== PROFILE ====================
@@ -202,12 +171,61 @@ class UserController extends Controller
     {
         return view('user.projects');
     }
-    
+
     /**
      * Find freelancers
      */
-    public function findFreelancers()
+    public function findFreelancers(Request $request)
     {
-        return view('user.find-freelancers');
+        $query = \App\Models\User::where('role', 'freelancer');
+
+        // Search by name or skills
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('title', 'like', "%{$search}%")
+                  ->orWhere('bio', 'like', "%{$search}%")
+                  ->orWhere('skills', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by skill
+        if ($request->filled('skill')) {
+            $query->where('skills', 'like', "%{$request->skill}%");
+        }
+
+        // Filter by location
+        if ($request->filled('location')) {
+            $query->where('location', 'like', "%{$request->location}%");
+        }
+
+        // Filter by rating
+        if ($request->filled('min_rating')) {
+            // This would require a more complex query with joins
+            // For now, we'll filter in PHP after getting results
+        }
+
+        // Sort
+        $sort = $request->get('sort', 'latest');
+        switch ($sort) {
+            case 'rating':
+                $query->orderByRaw('(SELECT AVG(rating) FROM reviews WHERE reviews.freelancer_id = users.id) DESC NULLS LAST');
+                break;
+            case 'projects':
+                $query->orderByRaw('(SELECT COUNT(*) FROM orders WHERE orders.freelancer_id = users.id AND orders.status = "completed") DESC');
+                break;
+            case 'name':
+                $query->orderBy('name', 'asc');
+                break;
+            case 'latest':
+            default:
+                $query->latest();
+                break;
+        }
+
+        $freelancers = $query->paginate(12)->withQueryString();
+
+        return view('user.find-freelancers', compact('freelancers'));
     }
 }

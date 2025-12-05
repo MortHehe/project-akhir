@@ -57,24 +57,39 @@ class OrderController extends Controller
             'job_title' => 'required|string|max:255',
             'job_description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'freelancer_id' => 'nullable|exists:users,id',
             'freelancer_email' => 'nullable|email',
             'deadline' => 'nullable|date|after:today',
             'requirements' => 'nullable|string',
         ]);
+
+        // Get freelancer details if selected
+        $freelancerId = $validated['freelancer_id'] ?? null;
+        $freelancerEmail = $validated['freelancer_email'] ?? null;
+
+        // If freelancer_id is provided but email is not, get email from user
+        if ($freelancerId && !$freelancerEmail) {
+            $freelancer = User::find($freelancerId);
+            if ($freelancer) {
+                $freelancerEmail = $freelancer->email;
+            }
+        }
 
         $order = Order::create([
             'user_id' => Auth::id(),
             'job_title' => $validated['job_title'],
             'job_description' => $validated['job_description'] ?? null,
             'price' => $validated['price'],
-            'freelancer_email' => $validated['freelancer_email'] ?? null,
+            'freelancer_id' => $freelancerId,
+            'freelancer_email' => $freelancerEmail,
             'deadline' => $validated['deadline'] ?? null,
             'requirements' => $validated['requirements'] ?? null,
             'status' => 'pending',
         ]);
 
-        return redirect()->route('orders.show', $order)
-            ->with('success', 'Order created successfully!');
+        // Redirect to payment page
+        return redirect()->route('orders.payment', $order)
+            ->with('success', 'Order created successfully! Please complete payment to proceed.');
     }
 
     /**
@@ -84,16 +99,78 @@ class OrderController extends Controller
     {
         // Check authorization
         $user = Auth::user();
-        
-        if (!$user->isAdmin() && 
-            $order->user_id !== $user->id && 
+
+        if (!$user->isAdmin() &&
+            $order->user_id !== $user->id &&
             $order->freelancer_id !== $user->id) {
             abort(403, 'Unauthorized access to this order.');
         }
 
         $order->load(['user', 'freelancer']);
-        
+
         return view('orders.show', compact('order'));
+    }
+
+    /**
+     * Show payment page for order
+     */
+    public function payment(Order $order)
+    {
+        // Check authorization - only order owner can pay
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access to this payment.');
+        }
+
+        // Check if already paid
+        if ($order->status !== 'pending') {
+            return redirect()->route('orders.show', $order)
+                ->with('info', 'This order has already been processed.');
+        }
+
+        return view('orders.payment', compact('order'));
+    }
+
+    /**
+     * Process payment for order (Demo Mode)
+     */
+    public function processPayment(Request $request, Order $order)
+    {
+        // Check authorization
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $validated = $request->validate([
+            'payment_method' => 'required|in:stripe,paypal',
+            'stripeToken' => 'required_if:payment_method,stripe',
+            'payment_outcome' => 'required|in:success,failure',
+        ]);
+
+        // Demo Mode: Check payment outcome variable
+        $outcome = $validated['payment_outcome'];
+
+        if ($outcome === 'success') {
+            // Simulate successful payment
+            try {
+                // In production, you'd call Stripe/PayPal API here
+                // For demo: just update the order status
+
+                $order->update([
+                    'status' => 'paid',
+                    'payment_method' => $validated['payment_method'],
+                    'paid_at' => now(),
+                ]);
+
+                return redirect()->route('orders.show', $order)
+                    ->with('success', '✅ Payment successful! Your order has been confirmed. (Demo Mode)');
+
+            } catch (\Exception $e) {
+                return back()->with('error', 'An unexpected error occurred: ' . $e->getMessage());
+            }
+        } else {
+            // Simulate payment failure
+            return back()->with('error', '❌ Payment failed: Card declined. Please try again or use a different payment method. (Demo Mode - You selected failure)');
+        }
     }
 
     /**
@@ -102,7 +179,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,accepted,in_progress,completed,cancelled,rejected',
+            'status' => 'required|in:pending,accepted,in_progress,completed,cancelled,rejected,paid',
         ]);
 
         $user = Auth::user();

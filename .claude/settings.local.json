@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(grep:*)",
+      "Bash(dir \"c:\\xampp\\htdocs\\project-akhir\\resources\\views\\layouts\" /B)",
+      "Bash(dir \"c:\\xampp\\htdocs\\project-akhir\\resources\" /S /B)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

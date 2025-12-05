@@ -469,11 +469,14 @@
                         <span>📊</span> Dashboard
                     </a>
                     <a href="{{ route('user.projects') }}" class="menu-item active">
-                        <span>📂</span> My Projects
+                        <span>📂</span> My Orders
                     </a>
-                    <a href="{{ route('user.find-freelancers') }}" class="menu-item">
+                    <a href="{{ route('chat.index') }}" class="menu-item">
+                        <span>💬</span> Messages
+                    </a>
+                    <!-- <a href="{{ route('user.find-freelancers') }}" class="menu-item">
                         <span>🔍</span> Find Freelancers
-                    </a>
+                    </a> -->
                 </div>
                 
                 <div class="menu-section">
@@ -504,7 +507,7 @@
                         <a href="{{ route('freelancer.dashboard') }}" class="dropdown-item">
                             <span>📊</span> Dashboard
                         </a>
-                        <a href="#" class="dropdown-item">
+                        <a href="{{ route('user.profile') }}" class="dropdown-item">
                             <span>👤</span> My Profile
                         </a>
                         <div class="dropdown-item logout">
