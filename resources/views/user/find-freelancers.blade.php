@@ -1,76 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find Freelancers - WORKZY</title>
+@auth
+    @extends('layouts.auth')
+
+    @section('title', 'Find Freelancers')
+    @section('menu-find', 'active')
+
+    @section('additional-styles')
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
-            color: #333;
-        }
-
-        /* Navigation */
-        nav {
-            background: white;
-            padding: 20px 60px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 32px;
-            font-weight: 900;
-            letter-spacing: -2px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .nav-links a {
-            margin-left: 30px;
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: #667eea;
-        }
-
-        /* Page Header */
-        .page-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 60px 60px 40px;
-            color: white;
-        }
-
-        .page-header h1 {
-            font-size: 42px;
-            margin-bottom: 10px;
-        }
-
-        .page-header p {
-            font-size: 18px;
-            opacity: 0.95;
-        }
-
-        /* Search & Filters */
         .search-filters {
             background: white;
-            padding: 30px 60px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 25px 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            border: 2px solid #f5f5f5;
         }
 
         .search-bar {
@@ -81,167 +23,113 @@
 
         .search-bar input {
             flex: 1;
-            padding: 15px 20px;
-            border: 2px solid #e1e8ed;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: 600;
         }
 
         .search-bar input:focus {
             outline: none;
             border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .search-bar button {
-            padding: 15px 40px;
+            padding: 12px 32px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         .search-bar button:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
         .filters {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
-            align-items: center;
         }
 
         .filter-group {
             display: flex;
             flex-direction: column;
             gap: 5px;
+            min-width: 180px;
         }
 
         .filter-group label {
-            font-size: 14px;
-            color: #666;
-            font-weight: 500;
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         .filter-group select,
         .filter-group input {
             padding: 10px 15px;
-            border: 2px solid #e1e8ed;
-            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
             font-size: 14px;
-            min-width: 180px;
+            font-weight: 600;
+            transition: all 0.3s;
         }
 
         .filter-group select:focus,
         .filter-group input:focus {
             outline: none;
             border-color: #667eea;
-        }
-
-        .filter-actions {
-            display: flex;
-            gap: 10px;
-            margin-left: auto;
-        }
-
-        .btn-filter {
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .btn-filter:hover {
-            background: #5568d3;
-        }
-
-        .btn-clear {
-            padding: 10px 20px;
-            background: transparent;
-            color: #666;
-            border: 2px solid #e1e8ed;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-clear:hover {
-            border-color: #667eea;
-            color: #667eea;
-        }
-
-        /* Results Section */
-        .results-section {
-            padding: 40px 60px;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .results-count {
-            font-size: 18px;
+            font-size: 16px;
             color: #666;
+            font-weight: 600;
         }
 
         .results-count strong {
-            color: #333;
-            font-weight: 700;
+            color: #667eea;
+            font-weight: 800;
         }
 
-        .sort-dropdown {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .sort-dropdown label {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .sort-dropdown select {
-            padding: 8px 15px;
-            border: 2px solid #e1e8ed;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        /* Freelancer Grid */
         .freelancers-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
+            gap: 25px;
             margin-bottom: 40px;
         }
 
         .freelancer-card {
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             transition: all 0.3s;
-            border: 2px solid transparent;
+            border: 2px solid #f5f5f5;
         }
 
         .freelancer-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
             border-color: #667eea;
         }
 
@@ -264,6 +152,7 @@
             font-size: 28px;
             font-weight: 700;
             flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         .freelancer-basic {
@@ -271,21 +160,23 @@
         }
 
         .freelancer-name {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
-            color: #333;
+            color: #1a1a1a;
             margin-bottom: 5px;
         }
 
         .freelancer-title {
-            font-size: 14px;
+            font-size: 13px;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
+            font-weight: 600;
         }
 
         .freelancer-location {
-            font-size: 13px;
+            font-size: 12px;
             color: #999;
+            font-weight: 600;
         }
 
         .freelancer-bio {
@@ -308,7 +199,7 @@
 
         .skill-tag {
             padding: 5px 12px;
-            background: #f0f4ff;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
             color: #667eea;
             font-size: 12px;
             font-weight: 600;
@@ -319,8 +210,8 @@
             display: flex;
             justify-content: space-between;
             padding: 15px 0;
-            border-top: 1px solid #f0f0f0;
-            border-bottom: 1px solid #f0f0f0;
+            border-top: 2px solid #f0f0f0;
+            border-bottom: 2px solid #f0f0f0;
             margin-bottom: 15px;
         }
 
@@ -330,16 +221,20 @@
 
         .stat-value {
             font-size: 20px;
-            font-weight: 700;
-            color: #667eea;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 3px;
         }
 
         .stat-label {
-            font-size: 12px;
+            font-size: 11px;
             color: #999;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            font-weight: 700;
         }
 
         .freelancer-actions {
@@ -353,15 +248,19 @@
             background: transparent;
             color: #667eea;
             border: 2px solid #667eea;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 10px;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+            font-size: 14px;
         }
 
         .btn-view:hover {
             background: #667eea;
             color: white;
+            transform: translateY(-2px);
         }
 
         .btn-hire {
@@ -370,24 +269,31 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 10px;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         .btn-hire:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
-        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 80px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
         .empty-state-icon {
-            font-size: 80px;
+            font-size: 72px;
             margin-bottom: 20px;
             opacity: 0.3;
         }
@@ -396,6 +302,7 @@
             font-size: 24px;
             color: #333;
             margin-bottom: 10px;
+            font-weight: 700;
         }
 
         .empty-state p {
@@ -404,19 +311,6 @@
             margin-bottom: 20px;
         }
 
-        .btn-reset {
-            padding: 12px 30px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
@@ -428,8 +322,8 @@
         .pagination span {
             padding: 10px 15px;
             background: white;
-            border: 2px solid #e1e8ed;
-            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
             color: #666;
             text-decoration: none;
             font-weight: 600;
@@ -451,83 +345,46 @@
             opacity: 0.3;
             cursor: not-allowed;
         }
-
-        /* Footer */
-        footer {
-            background: #2c3e50;
-            color: white;
-            padding: 40px 60px;
-            margin-top: 60px;
-            text-align: center;
-        }
-
-        footer p {
-            opacity: 0.8;
-        }
     </style>
-</head>
-<body>
-    <!-- Navigation -->
-    <nav>
-        <div class="logo">WORKZY</div>
-        <div class="nav-links">
-            <a href="{{ route('welcome') }}">Home</a>
-            <a href="{{ route('find-freelancers') }}">Find Freelancers</a>
-            @auth
-                <a href="{{ route('user.dashboard') }}">Dashboard</a>
-                <a href="{{ route('chat.index') }}">Messages</a>
-            @else
-                <a href="{{ route('login') }}">Login</a>
-                <a href="{{ route('register') }}">Sign Up</a>
-            @endauth
+    @endsection
+
+    @section('content')
+        <div class="page-header">
+            <h1>🔍 Find Top Freelancers</h1>
+            <p>Browse thousands of talented professionals ready to work on your project</p>
         </div>
-    </nav>
 
-    <!-- Page Header -->
-    <div class="page-header">
-        <h1>Find Top Freelancers</h1>
-        <p>Browse thousands of talented professionals ready to work on your project</p>
-    </div>
-
-    <!-- Search & Filters -->
-    <div class="search-filters">
-        <form method="GET" action="{{ route('find-freelancers') }}">
-            <div class="search-bar">
-                <input type="text" name="search" placeholder="Search by name, skills, or expertise..." value="{{ request('search') }}">
-                <button type="submit">🔍 Search</button>
-            </div>
-
-            <div class="filters">
-                <div class="filter-group">
-                    <label>Skill/Service</label>
-                    <input type="text" name="skill" placeholder="e.g. Web Development" value="{{ request('skill') }}">
+        <div class="search-filters">
+            <form method="GET" action="{{ route('find-freelancers') }}">
+                <div class="search-bar">
+                    <input type="text" name="search" placeholder="Search by name, skills, or expertise..." value="{{ request('search') }}">
+                    <button type="submit">🔍 Search</button>
                 </div>
 
-                <div class="filter-group">
-                    <label>Location</label>
-                    <input type="text" name="location" placeholder="Any location" value="{{ request('location') }}">
-                </div>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Skill/Service</label>
+                        <input type="text" name="skill" placeholder="e.g. Web Development" value="{{ request('skill') }}">
+                    </div>
 
-                <div class="filter-group">
-                    <label>Sort By</label>
-                    <select name="sort" onchange="this.form.submit()">
-                        <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Latest</option>
-                        <option value="rating" {{ request('sort') === 'rating' ? 'selected' : '' }}>Highest Rated</option>
-                        <option value="projects" {{ request('sort') === 'projects' ? 'selected' : '' }}>Most Projects</option>
-                        <option value="name" {{ request('sort') === 'name' ? 'selected' : '' }}>Name (A-Z)</option>
-                    </select>
-                </div>
+                    <div class="filter-group">
+                        <label>Location</label>
+                        <input type="text" name="location" placeholder="Any location" value="{{ request('location') }}">
+                    </div>
 
-                <div class="filter-actions">
-                    <button type="submit" class="btn-filter">Apply Filters</button>
-                    <a href="{{ route('find-freelancers') }}" class="btn-clear">Clear All</a>
+                    <div class="filter-group">
+                        <label>Sort By</label>
+                        <select name="sort" onchange="this.form.submit()">
+                            <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Latest</option>
+                            <option value="rating" {{ request('sort') === 'rating' ? 'selected' : '' }}>Highest Rated</option>
+                            <option value="projects" {{ request('sort') === 'projects' ? 'selected' : '' }}>Most Projects</option>
+                            <option value="name" {{ request('sort') === 'name' ? 'selected' : '' }}>Name (A-Z)</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-        </form>
-    </div>
+            </form>
+        </div>
 
-    <!-- Results Section -->
-    <div class="results-section">
         <div class="results-header">
             <div class="results-count">
                 Found <strong>{{ $freelancers->total() }}</strong> freelancers
@@ -538,7 +395,6 @@
         </div>
 
         @if($freelancers->count() > 0)
-            <!-- Freelancers Grid -->
             <div class="freelancers-grid">
                 @foreach($freelancers as $freelancer)
                     <div class="freelancer-card">
@@ -589,54 +445,155 @@
                         </div>
 
                         <div class="freelancer-actions">
-                            @auth
-                                <button class="btn-view" onclick="window.location='{{ route('freelancer.profile', $freelancer->id) }}'">View Profile</button>
-                                <button class="btn-hire" onclick="window.location='{{ route('orders.create') }}?freelancer_id={{ $freelancer->id }}'">Hire Now</button>
-                            @else
-                                <button class="btn-view" onclick="window.location='{{ route('login') }}'">View Profile</button>
-                                <button class="btn-hire" onclick="window.location='{{ route('login') }}'">Hire Now</button>
-                            @endauth
+                            <a href="{{ route('freelancer.profile', $freelancer->id) }}" class="btn-view">View Profile</a>
+                            <a href="{{ route('orders.create') }}?freelancer_id={{ $freelancer->id }}" class="btn-hire">Hire Now</a>
                         </div>
                     </div>
                 @endforeach
             </div>
 
-            <!-- Pagination -->
-            <div class="pagination">
-                @if ($freelancers->onFirstPage())
-                    <span class="disabled">« Previous</span>
-                @else
-                    <a href="{{ $freelancers->previousPageUrl() }}">« Previous</a>
-                @endif
-
-                @foreach ($freelancers->getUrlRange(1, $freelancers->lastPage()) as $page => $url)
-                    @if ($page == $freelancers->currentPage())
-                        <span class="active">{{ $page }}</span>
+            @if($freelancers->hasPages())
+                <div class="pagination">
+                    @if ($freelancers->onFirstPage())
+                        <span class="disabled">« Previous</span>
                     @else
-                        <a href="{{ $url }}">{{ $page }}</a>
+                        <a href="{{ $freelancers->previousPageUrl() }}">« Previous</a>
                     @endif
-                @endforeach
 
-                @if ($freelancers->hasMorePages())
-                    <a href="{{ $freelancers->nextPageUrl() }}">Next »</a>
-                @else
-                    <span class="disabled">Next »</span>
-                @endif
-            </div>
+                    @foreach ($freelancers->getUrlRange(1, $freelancers->lastPage()) as $page => $url)
+                        @if ($page == $freelancers->currentPage())
+                            <span class="active">{{ $page }}</span>
+                        @else
+                            <a href="{{ $url }}">{{ $page }}</a>
+                        @endif
+                    @endforeach
+
+                    @if ($freelancers->hasMorePages())
+                        <a href="{{ $freelancers->nextPageUrl() }}">Next »</a>
+                    @else
+                        <span class="disabled">Next »</span>
+                    @endif
+                </div>
+            @endif
         @else
-            <!-- Empty State -->
             <div class="empty-state">
                 <div class="empty-state-icon">🔍</div>
                 <h3>No freelancers found</h3>
                 <p>Try adjusting your search criteria or filters to find more results</p>
-                <a href="{{ route('find-freelancers') }}" class="btn-reset">Reset Filters</a>
+                <a href="{{ route('find-freelancers') }}" class="btn-hire">Reset Filters</a>
             </div>
         @endif
-    </div>
+    @endsection
+@else
+    {{-- Standalone version for non-authenticated users --}}
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Find Freelancers - WORKZY</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2024 WORKZY. All rights reserved.</p>
-    </footer>
-</body>
-</html>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: #f5f7fa;
+                color: #333;
+            }
+
+            nav {
+                background: white;
+                padding: 20px 60px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .logo {
+                font-size: 32px;
+                font-weight: 900;
+                letter-spacing: -2px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .nav-links a {
+                margin-left: 30px;
+                text-decoration: none;
+                color: #333;
+                font-weight: 500;
+                transition: color 0.3s;
+            }
+
+            .nav-links a:hover {
+                color: #667eea;
+            }
+
+            .page-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 60px 60px 40px;
+                color: white;
+            }
+
+            .page-header h1 {
+                font-size: 42px;
+                margin-bottom: 10px;
+            }
+
+            .page-header p {
+                font-size: 18px;
+                opacity: 0.95;
+            }
+
+            .main-content {
+                padding: 40px 60px;
+            }
+
+            footer {
+                background: #2c3e50;
+                color: white;
+                padding: 40px 60px;
+                margin-top: 60px;
+                text-align: center;
+            }
+
+            footer p {
+                opacity: 0.8;
+            }
+        </style>
+    </head>
+    <body>
+        <nav>
+            <div class="logo">WORKZY</div>
+            <div class="nav-links">
+                <a href="{{ route('welcome') }}">Home</a>
+                <a href="{{ route('find-freelancers') }}">Find Freelancers</a>
+                <a href="{{ route('login') }}">Login</a>
+                <a href="{{ route('register') }}">Sign Up</a>
+            </div>
+        </nav>
+
+        <div class="page-header">
+            <h1>Find Top Freelancers</h1>
+            <p>Browse thousands of talented professionals ready to work on your project</p>
+        </div>
+
+        <div class="main-content">
+            <p style="text-align: center; padding: 60px 20px; font-size: 18px; color: #666;">
+                Please <a href="{{ route('login') }}" style="color: #667eea; font-weight: 700;">login</a> to browse freelancers.
+            </p>
+        </div>
+
+        <footer>
+            <p>&copy; 2024 WORKZY. All rights reserved.</p>
+        </footer>
+    </body>
+    </html>
+@endauth

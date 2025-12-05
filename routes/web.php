@@ -181,7 +181,6 @@ Route::middleware(['auth', 'role:freelancer'])->prefix('freelancer')->group(func
 Route::middleware(['auth'])->prefix('orders')->group(function () {
     // View orders (all authenticated users can view)
     Route::get('/', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/{order}', [OrderController::class, 'show'])->name('orders.show');
 
     // Create orders (only regular users/clients can create orders)
     Route::middleware('role:user')->group(function () {
@@ -195,6 +194,9 @@ Route::middleware(['auth'])->prefix('orders')->group(function () {
         // Cancel (only order owners can cancel)
         Route::patch('/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     });
+
+    // View individual order (after /create to avoid conflict)
+    Route::get('/{order}', [OrderController::class, 'show'])->name('orders.show');
 
     // Status Updates (freelancers and clients can update status)
     Route::patch('/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
