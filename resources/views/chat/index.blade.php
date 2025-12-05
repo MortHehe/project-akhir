@@ -6,10 +6,10 @@
 @section('additional-styles')
 <style>
     .conversations-list {
-        background: white;
+        background: #f8f9fa;
         border-radius: 16px;
         box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-        overflow: hidden;
+        padding: 8px 0;
         border: 2px solid #f0f0f0;
     }
 
@@ -17,25 +17,28 @@
         display: flex;
         align-items: center;
         padding: 24px;
-        border-bottom: 1px solid #f0f2f5;
+        margin: 12px;
+        border: 2px solid #f0f0f0;
+        border-radius: 12px;
         text-decoration: none;
         color: #333;
         transition: all 0.3s ease;
         position: relative;
+        background: white;
     }
 
     .conversation-item:hover {
         background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-        transform: translateX(5px);
-    }
-
-    .conversation-item:last-child {
-        border-bottom: none;
+        transform: translateY(-2px);
+        border-color: #667eea;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
     }
 
     .conversation-item.unread {
         background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
-        border-left: 4px solid #667eea;
+        border: 2px solid #667eea;
+        border-left: 5px solid #667eea;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
     }
 
     .conversation-item.unread .conversation-name {
