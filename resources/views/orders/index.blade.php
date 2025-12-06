@@ -377,6 +377,10 @@
                     <div class="order-actions">
                         <a href="{{ route('orders.show', $order) }}" class="btn btn-primary">View Details</a>
 
+                        @if($order->status === 'completed')
+                            <a href="{{ route('reviews.create', $order) }}" class="btn btn-secondary">View Review</a>
+                        @endif
+
                         @if($order->status === 'pending' && !auth()->user()->isFreelancer())
                             <a href="{{ route('orders.payment', $order) }}" class="btn btn-secondary">Complete Payment</a>
                         @endif
