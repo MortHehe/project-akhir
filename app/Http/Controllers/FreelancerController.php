@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Withdrawal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -134,21 +135,45 @@ class FreelancerController extends Controller
     public function withdraw(Request $request)
     {
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:100000', // Minimum 100k IDR
-            'bank_account' => 'required|string',
+            'amount' => 'required|numeric|min:50', // Minimum $50
+            'payment_method' => 'required|in:bank_transfer,paypal',
+            'payment_details' => 'required|string|max:500',
         ]);
-        
+
         $user = Auth::user();
-        $availableBalance = $user->total_earnings * 0.85; // 85% after platform fee
-        
+        $totalEarnings = $user->getTotalEarningsAttribute() ?? 0;
+
+        // Calculate total withdrawals (pending, approved, and sent)
+        $totalWithdrawals = $user->withdrawals()
+            ->whereIn('status', ['pending', 'approved', 'sent'])
+            ->sum('amount') ?? 0;
+
+        // Available balance = (Total earnings * 85%) - Total withdrawals
+        $availableBalance = ($totalEarnings * 0.85) - $totalWithdrawals;
+        $availableBalance = max(0, $availableBalance); // Ensure it's never negative
+
+        // Check for sufficient balance
         if ($validated['amount'] > $availableBalance) {
-            return back()->with('error', 'Insufficient balance.');
+            return back()->with('error', 'Insufficient balance. Available: $' . number_format($availableBalance, 2));
         }
-        
-        // Create withdrawal request (you may need a withdrawals table)
-        // Withdrawal::create([...]);
-        
-        return back()->with('success', 'Withdrawal request submitted! Processing time: 1-3 business days.');
+
+        // Check for pending withdrawals
+        $pendingWithdrawal = $user->withdrawals()->where('status', 'pending')->first();
+        if ($pendingWithdrawal) {
+            return back()->with('error', 'You already have a pending withdrawal request. Please wait for it to be processed.');
+        }
+
+        // Create withdrawal request
+        Withdrawal::create([
+            'user_id' => $user->id,
+            'amount' => $validated['amount'],
+            'payment_method' => $validated['payment_method'],
+            'payment_details' => $validated['payment_details'],
+            'status' => 'pending',
+            'requested_at' => now(),
+        ]);
+
+        return back()->with('success', '✅ Withdrawal request submitted successfully! Your request is pending admin approval. Processing time: 1-3 business days.');
     }
     
     // ==================== PROFILE ====================

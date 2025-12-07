@@ -191,12 +191,20 @@ Route::middleware(['auth'])->prefix('orders')->group(function () {
         Route::get('/{order}/payment', [OrderController::class, 'payment'])->name('orders.payment');
         Route::post('/{order}/payment', [OrderController::class, 'processPayment'])->name('orders.processPayment');
 
+        // Approve delivered order (only order owners can approve)
+        Route::patch('/{order}/approve', [OrderController::class, 'approve'])->name('orders.approve');
+
         // Cancel (only order owners can cancel)
         Route::patch('/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     });
 
     // View individual order (after /create to avoid conflict)
     Route::get('/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+    // Deliver work (freelancers only)
+    Route::middleware('role:freelancer')->group(function () {
+        Route::post('/{order}/deliver', [OrderController::class, 'deliver'])->name('orders.deliver');
+    });
 
     // Status Updates (freelancers and clients can update status)
     Route::patch('/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');

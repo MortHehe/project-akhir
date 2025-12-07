@@ -446,6 +446,35 @@
                 </div>
             @endif
 
+            @if($order->delivery_message && in_array($order->status, ['delivered', 'completed']))
+                <div class="detail-row" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border-left: 4px solid #667eea; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                    <div class="detail-label" style="color: #667eea; font-weight: 700;">📦 Delivery Message</div>
+                    <div class="detail-value">
+                        <div class="description-text">{{ $order->delivery_message }}</div>
+                    </div>
+                </div>
+            @endif
+
+            @if($order->delivery_file && in_array($order->status, ['delivered', 'completed']))
+                <div class="detail-row" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border-left: 4px solid #667eea; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                    <div class="detail-label" style="color: #667eea; font-weight: 700;">📎 Delivery Attachment</div>
+                    <div class="detail-value">
+                        <a href="{{ asset('storage/' . $order->delivery_file) }}"
+                           download
+                           style="display: inline-block; padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                            ⬇ Download File
+                        </a>
+                    </div>
+                </div>
+            @endif
+
+            @if($order->delivered_at && in_array($order->status, ['delivered', 'completed']))
+                <div class="detail-row">
+                    <div class="detail-label">Delivered At</div>
+                    <div class="detail-value">{{ $order->delivered_at->format('M d, Y H:i A') }}</div>
+                </div>
+            @endif
+
             <div class="detail-row">
                 <div class="detail-label">Budget</div>
                 <div class="detail-value">${{ number_format($order->price, 2) }}</div>
@@ -540,16 +569,42 @@
                                 </button>
                             </div>
                         </form>
-                    @elseif($order->status === 'in_progress')
-                        <!-- Mark as Delivered -->
-                        <p style="color: #666; margin-bottom: 15px; font-weight: 600;">You are currently working on this order. Mark it as delivered when complete!</p>
-                        <form action="{{ route('orders.updateStatus', $order) }}" method="POST">
+                    @elseif($order->status === 'in_progress' || $order->status === 'accepted')
+                        <!-- Deliver Work Form -->
+                        <p style="color: #666; margin-bottom: 15px; font-weight: 600;">Deliver your completed work with a message and optional file attachment.</p>
+                        <form action="{{ route('orders.deliver', $order) }}" method="POST" enctype="multipart/form-data" style="margin-top: 15px;">
                             @csrf
-                            @method('PATCH')
-                            <input type="hidden" name="status" value="delivered">
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 700; color: #333; margin-bottom: 8px;">Delivery Message *</label>
+                                <textarea
+                                    name="delivery_message"
+                                    required
+                                    rows="4"
+                                    placeholder="Describe the work you've completed, any notes for the client, or instructions..."
+                                    style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical;"
+                                >{{ old('delivery_message') }}</textarea>
+                                @error('delivery_message')
+                                    <span style="color: #dc3545; font-size: 12px; margin-top: 5px; display: block;">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 700; color: #333; margin-bottom: 8px;">Attachment (Optional)</label>
+                                <input
+                                    type="file"
+                                    name="delivery_file"
+                                    accept=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png,.gif,.txt,.csv,.xls,.xlsx"
+                                    style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;"
+                                >
+                                <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">Max file size: 10MB. Accepted formats: PDF, DOC, DOCX, ZIP, RAR, images, etc.</small>
+                                @error('delivery_file')
+                                    <span style="color: #dc3545; font-size: 12px; margin-top: 5px; display: block;">{{ $message }}</span>
+                                @enderror
+                            </div>
+
                             <div class="action-buttons full">
                                 <button type="submit" class="btn btn-deliver">
-                                    ✓ Mark as Delivered
+                                    📦 Deliver Work
                                 </button>
                             </div>
                         </form>
@@ -594,6 +649,16 @@
                     <a href="{{ route('orders.payment', $order) }}" class="btn btn-progress" style="grid-column: 1 / -1;">
                         💳 Complete Payment
                     </a>
+                @endif
+
+                @if(!auth()->user()->isFreelancer() && $order->status === 'delivered' && $order->user_id === auth()->id())
+                    <form action="{{ route('orders.approve', $order) }}" method="POST" style="grid-column: 1 / -1;">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="btn btn-accept" style="width: 100%;">
+                            ✅ Approve & Complete Order
+                        </button>
+                    </form>
                 @endif
 
                 @if($order->user_id === auth()->id() && $order->freelancer)

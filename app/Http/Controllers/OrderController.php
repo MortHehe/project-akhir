@@ -179,7 +179,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,accepted,in_progress,completed,cancelled,rejected,paid',
+            'status' => 'required|in:pending,accepted,in_progress,delivered,completed,cancelled,rejected,paid',
         ]);
 
         $user = Auth::user();
@@ -231,12 +231,82 @@ class OrderController extends Controller
     }
 
     /**
+     * Deliver work (freelancer only)
+     */
+    public function deliver(Request $request, Order $order)
+    {
+        $user = Auth::user();
+
+        // Only assigned freelancer can deliver
+        if (!$user->isFreelancer() || $order->freelancer_id !== $user->id) {
+            abort(403, 'Unauthorized - Only the assigned freelancer can deliver work.');
+        }
+
+        // Check if order is in progress or accepted
+        if (!in_array($order->status, ['accepted', 'in_progress'])) {
+            return back()->with('error', 'Order must be accepted or in progress to deliver work.');
+        }
+
+        $validated = $request->validate([
+            'delivery_message' => 'required|string|max:1000',
+            'delivery_file' => 'nullable|file|max:10240', // 10MB max
+        ]);
+
+        $deliveryFile = null;
+
+        // Handle file upload
+        if ($request->hasFile('delivery_file')) {
+            $file = $request->file('delivery_file');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $deliveryFile = $file->storeAs('deliveries', $filename, 'public');
+        }
+
+        // Update order with delivery info
+        $order->update([
+            'status' => 'delivered',
+            'delivery_message' => $validated['delivery_message'],
+            'delivery_file' => $deliveryFile,
+            'delivered_at' => now(),
+        ]);
+
+        return redirect()->route('orders.show', $order)
+            ->with('success', '📦 Work delivered successfully! Waiting for client approval.');
+    }
+
+    /**
+     * Approve delivered order (client only)
+     */
+    public function approve(Order $order)
+    {
+        $user = Auth::user();
+
+        // Only client who created order can approve
+        if ($order->user_id !== $user->id) {
+            abort(403, 'Unauthorized - Only the client can approve the order.');
+        }
+
+        // Check if order is in delivered status
+        if ($order->status !== 'delivered') {
+            return back()->with('error', 'Order must be delivered before it can be approved.');
+        }
+
+        // Update to completed
+        $order->update([
+            'status' => 'completed',
+            'completed_at' => now(),
+        ]);
+
+        return redirect()->route('orders.show', $order)
+            ->with('success', '🎉 Order approved and completed successfully! You can now write a review.');
+    }
+
+    /**
      * Cancel order
      */
     public function cancel(Order $order)
     {
         $user = Auth::user();
-        
+
         // Only user who created order or admin can cancel
         if (!$user->isAdmin() && $order->user_id !== $user->id) {
             abort(403, 'Unauthorized');

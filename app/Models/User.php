@@ -213,6 +213,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is a regular user/client.
+     */
+    public function isUser()
+    {
+        return $this->role === 'user';
+    }
+
+    /**
      * Get messages sent by this user.
      */
     public function sentMessages()
@@ -226,5 +234,13 @@ class User extends Authenticatable
     public function receivedMessages()
     {
         return $this->hasMany(Message::class, 'receiver_id');
+    }
+
+    /**
+     * Get all withdrawal requests by this user.
+     */
+    public function withdrawals()
+    {
+        return $this->hasMany(Withdrawal::class);
     }
 }

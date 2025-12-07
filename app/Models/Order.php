@@ -25,6 +25,9 @@ class Order extends Model
         'notes',
         'accepted_at',
         'completed_at',
+        'delivery_message',
+        'delivery_file',
+        'delivered_at',
     ];
 
     protected $casts = [
@@ -33,6 +36,7 @@ class Order extends Model
         'paid_at' => 'datetime',
         'accepted_at' => 'datetime',
         'completed_at' => 'datetime',
+        'delivered_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
