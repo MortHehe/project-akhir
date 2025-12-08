@@ -42,8 +42,8 @@
 | Role | Description | Capabilities |
 |------|-------------|--------------|
 | 👤 **Client** | Businesses or individuals seeking freelance services | Create orders, Make payments, Browse freelancers, Write reviews |
-| 💼 **Freelancer** | Service providers offering their expertise | View orders, Accept/Reject jobs, Deliver work, Manage profile |
-| 👑 **Admin** | Platform administrators | Manage users, Monitor orders, View analytics |
+| 💼 **Freelancer** | Service providers offering their expertise | View orders, Accept/Reject jobs, Deliver work, Request withdrawals, Manage profile |
+| 👑 **Admin** | Platform administrators | Manage users, Monitor orders, Process withdrawals, View analytics |
 
 ---
 
@@ -61,7 +61,9 @@
 - 📋 **Order Management** - View and manage assigned projects
 - ✅ **Accept/Reject** - Choose projects that match your skills
 - 📈 **Progress Updates** - Update clients on project status
-- 💰 **Earnings Dashboard** - Track income and completed projects
+- 💰 **Earnings Dashboard** - Track income and completed projects with 15% platform fee deduction
+- 💸 **Withdrawal System** - Request payouts via bank transfer or PayPal
+- 📊 **Transaction History** - View earnings and withdrawal records
 - 🎨 **Profile Showcase** - Display skills, reviews, and portfolio
 - 💬 **Client Communication** - Real-time messaging with clients
 
@@ -71,6 +73,16 @@
 - 🎨 **Modern UI** - Clean, intuitive purple gradient theme
 - 📱 **Real-time Updates** - 2-second polling for instant notifications
 - 🛡️ **XSS Protection** - Secure messaging and input handling
+- 👑 **Admin Dashboard** - Filament-powered admin panel with analytics
+
+### For Administrators
+- 📊 **Analytics Dashboard** - Platform revenue, user statistics, order metrics
+- 👥 **User Management** - View, edit, and manage users (clients & freelancers)
+- 📋 **Order Monitoring** - Track all orders and their status
+- 💸 **Withdrawal Management** - Approve/reject withdrawal requests, mark as sent
+- 📈 **Revenue Charts** - Monthly revenue trends and order distribution
+- 📉 **User Growth** - Track freelancer and client registration trends
+- 🎯 **Latest Orders Widget** - Real-time order updates
 
 ---
 
@@ -186,7 +198,7 @@
 
 ### Level 1 DFD - Main Processes
 
-> **Purpose:** Breaks down the system into 6 major processes and shows data flow between them
+> **Purpose:** Breaks down the system into 7 major processes and shows data flow between them
 
 ```
 ┌──────────────┐
@@ -228,17 +240,27 @@
        │                    ┌─────────▼─────────┐
        ▼                    │  💳 Payment       │
 ╔══════════════════════╗    │  Gateway (Ext)    │
-║  4️⃣  MESSAGING      ║    └───────────────────┘
-║  SYSTEM              ║         ┌─────────────────┐
-║  • Send Messages     ║◄───────►│  📁 D4: Messages│
-║  • Real-time Polling ║         │  (Database)     │
-║  • Display Chat      ║         └─────────────────┘
+║  4️⃣  WITHDRAWAL     ║    └───────────────────┘
+║  MANAGEMENT          ║         ┌─────────────────┐
+║  • Request Payout    ║◄───────►│  📁 D7:         │
+║  • Calculate Balance ║         │  Withdrawals    │
+║  • Admin Approval    ║         │  (Database)     │
+║  • Process Payment   ║         └─────────────────┘
+╚══════╦═══════════════╝
+       │
+       ▼
+╔══════════════════════╗         ┌─────────────────┐
+║  5️⃣  MESSAGING      ║◄───────►│  📁 D4: Messages│
+║  SYSTEM              ║         │  (Database)     │
+║  • Send Messages     ║         └─────────────────┘
+║  • Real-time Polling ║
+║  • Display Chat      ║
 ╚══════╦═══════════════╝
        │ Chat Messages
        │
        ▼
 ╔══════════════════════╗         ┌─────────────────┐
-║  5️⃣  REVIEW         ║◄───────►│  📁 D5: Reviews │
+║  6️⃣  REVIEW         ║◄───────►│  📁 D5: Reviews │
 ║  MANAGEMENT          ║         │  (Database)     │
 ║  • Create Review     ║         └─────────────────┘
 ║  • Calculate Rating  ║
@@ -248,7 +270,7 @@
        │
        ▼
 ╔══════════════════════╗         ┌─────────────────┐
-║  6️⃣  PROFILE        ║◄───────►│  📁 D1: Users   │
+║  7️⃣  PROFILE        ║◄───────►│  📁 D1: Users   │
 ║  MANAGEMENT          ║         │  (Database)     │
 ║  • Update Info       ║         └─────────────────┘
 ║  • Manage Skills     ║
@@ -684,6 +706,126 @@ setInterval(() => {
 
 ---
 
+#### 4️⃣ Withdrawal Management Process
+
+> **Flow:** Calculate Available Balance → Request Withdrawal → Admin Review → Process Payment
+
+```
+┌──────────────┐
+│💼 FREELANCER │
+└──────┬───────┘
+       │
+       │ 💰 Check Earnings
+       ▼
+┌─────────────────────────┐         ┌─────────────────┐
+│  4.1 CALCULATE          │◄───────►│  📁 D2: Orders  │
+│  AVAILABLE BALANCE      │  Query  │  📁 D7:         │
+│  • Total Earnings       │         │  Withdrawals    │
+│  • - Platform Fee (15%) │         └─────────────────┘
+│  • - Pending Withdrawals│
+│  • = Available Balance  │
+└──────┬──────────────────┘
+       │ 💵 Balance: $850.00
+       │ (from $1,000 earnings)
+       ▼
+┌─────────────────────────┐
+│  4.2 VALIDATE           │
+│  WITHDRAWAL REQUEST     │
+│  • Check min: $50       │
+│  • Check balance        │
+│  • No pending request   │
+└──────┬──────────────────┘
+       │ ✅ Valid Request
+       │ 💸 Withdrawal Data
+       │ (amount, method, details)
+       ▼
+┌─────────────────────────┐         ┌─────────────────┐
+│  4.3 CREATE WITHDRAWAL  │────────►│  📁 D7:         │
+│  REQUEST                │  Insert │  Withdrawals    │
+│  • Store amount         │         │  (Database)     │
+│  • Store method         │         └─────────────────┘
+│  • Store details        │
+│  • Set status: PENDING  │
+│  • Set requested_at     │
+└──────┬──────────────────┘
+       │ 📧 Notification to Admin
+       │
+       ▼
+┌──────────────┐
+│  👑 ADMIN    │
+└──────┬───────┘
+       │
+       │ 👁️ Review Request
+       ▼
+┌─────────────────────────┐         ┌─────────────────┐
+│  4.4 ADMIN REVIEW       │◄───────►│  📁 D7:         │
+│  & DECISION             │  Update │  Withdrawals    │
+│  ✅ Approve → APPROVED  │         └─────────────────┘
+│  ❌ Reject → REJECTED   │
+│  • Add admin notes      │
+│  • Set processed_at     │
+└──────┬──────────────────┘
+       │ ✅ Approved
+       │
+       ▼
+┌─────────────────────────┐         ┌─────────────────┐
+│  4.5 PROCESS PAYMENT    │────────►│  📁 D7:         │
+│  • Transfer funds       │  Update │  Withdrawals    │
+│  • Set status: SENT     │         └─────────────────┘
+│  • Update processed_at  │
+└──────┬──────────────────┘
+       │ 💸 Payment Sent
+       │ 📧 Notification
+       ▼
+┌──────────────┐
+│💼 FREELANCER │ (Funds received)
+└──────────────┘
+```
+
+**Withdrawal Status Flow:**
+```
+🟡 PENDING → 👀 Admin Reviews → ✅ APPROVED → 💸 Admin Sends → 🟢 SENT
+     ↓
+  ❌ REJECTED (with reason)
+```
+
+**Balance Calculation Example:**
+```
+Total Earnings (completed orders): $1,000.00
+Platform Fee (15%):                -  $150.00
+────────────────────────────────────────────
+Freelancer's Share (85%):          $  850.00
+Pending Withdrawals:               -  $200.00
+────────────────────────────────────────────
+Available Balance:                 $  650.00
+```
+
+**Withdrawal Workflow:**
+```
+┌─────────────────────────────────────────┐
+│  💰 Freelancer Earnings Dashboard       │
+├─────────────────────────────────────────┤
+│  Total Earnings:        $1,000.00       │
+│  Platform Fee (15%):    -  $150.00      │
+│  Pending Withdrawals:   -  $200.00      │
+│  ─────────────────────────────────────  │
+│  Available to Withdraw:  $  650.00      │
+│                                         │
+│  [Request Withdrawal]                   │
+│   Amount: $___                          │
+│   Method: [Bank Transfer / PayPal]      │
+│   Details: ___________________________  │
+│                                         │
+│  Transaction History:                   │
+│  ✅ +$300.00  Order #123  (Jan 5)      │
+│  ✅ +$700.00  Order #124  (Jan 6)      │
+│  🟡 -$200.00  Withdrawal  (Pending)     │
+│  🟢 -$150.00  Withdrawal  (Sent)        │
+└─────────────────────────────────────────┘
+```
+
+---
+
 ## 🗄️ Database Schema
 
 ### Entity Relationship Diagram
@@ -787,6 +929,26 @@ setInterval(() => {
 │     user_agent      │
 │     last_activity   │
 └─────────────────────┘
+
+┌─────────────────────┐
+│  💸 WITHDRAWALS     │
+├─────────────────────┤
+│ PK: id              │
+│ FK: user_id         │───┐ N:1 (Many withdrawals from freelancer)
+│     amount          │   │
+│     payment_method  │   │
+│     payment_details │   │
+│     status (enum)   │   │
+│     admin_notes     │   │
+│     requested_at    │   │
+│     processed_at    │   │
+│     created_at      │   │
+│     updated_at      │   │
+└─────────────────────┘   │
+                          │
+       ┌──────────────────┘
+       │
+       └─────► User (Freelancer)
 ```
 
 ### Data Dictionary
@@ -895,6 +1057,25 @@ setInterval(() => {
 | `ip_address` | VARCHAR(45) | Client IP | NULLABLE |
 | `user_agent` | VARCHAR(255) | Browser info | NULLABLE |
 | `last_activity` | TIMESTAMP | Last activity time | DEFAULT NOW() |
+
+</details>
+
+<details>
+<summary><b>📁 D7: Withdrawals Table</b></summary>
+
+| Field | Type | Description | Constraints |
+|-------|------|-------------|-------------|
+| `id` | INT | Primary key | AUTO_INCREMENT, NOT NULL |
+| `user_id` | INT | Freelancer requesting withdrawal | FK → Users(id), NOT NULL |
+| `amount` | DECIMAL(10,2) | Withdrawal amount | NOT NULL, >= 50.00 |
+| `payment_method` | ENUM | Payment method | 'bank_transfer', 'paypal' |
+| `payment_details` | TEXT | Bank/PayPal details | NOT NULL |
+| `status` | ENUM | Withdrawal status | 'pending', 'approved', 'sent', 'rejected' |
+| `admin_notes` | TEXT | Admin rejection reason | NULLABLE |
+| `requested_at` | TIMESTAMP | Request timestamp | DEFAULT NOW() |
+| `processed_at` | TIMESTAMP | Processing timestamp | NULLABLE |
+| `created_at` | TIMESTAMP | Record creation time | DEFAULT NOW() |
+| `updated_at` | TIMESTAMP | Last update time | ON UPDATE NOW() |
 
 </details>
 
@@ -1257,11 +1438,14 @@ Password: admin123
 
 | Metric | Count |
 |--------|-------|
-| **Total Processes** | 6 (Authentication, Orders, Payments, Messaging, Reviews, Profiles) |
-| **Database Tables** | 6 (Users, Orders, Payments, Messages, Reviews, Sessions) |
+| **Total Processes** | 7 (Authentication, Orders, Payments, Withdrawals, Messaging, Reviews, Profiles) |
+| **Database Tables** | 7 (Users, Orders, Payments, Withdrawals, Messages, Reviews, Sessions) |
 | **User Roles** | 3 (Client, Freelancer, Admin) |
 | **Order Statuses** | 8 (Pending, Paid, Accepted, In Progress, Delivered, Completed, Cancelled, Rejected) |
-| **API Endpoints** | 25+ routes |
+| **Withdrawal Statuses** | 4 (Pending, Approved, Sent, Rejected) |
+| **Platform Fee** | 15% on freelancer earnings |
+| **Admin Features** | User Management, Order Monitoring, Withdrawal Processing, Analytics Dashboard |
+| **API Endpoints** | 30+ routes |
 | **Security Layers** | 4 (Auth, Authorization, Validation, Payment) |
 
 ---
