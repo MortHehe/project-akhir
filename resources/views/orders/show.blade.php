@@ -667,7 +667,7 @@
                     </a>
                 @endif
 
-                @if(auth()->user()->isFreelancer() && $order->user)
+                @if(auth()->user()->isFreelancer() && $order->freelancer_id === auth()->id() && $order->user)
                     <a href="{{ route('chat.show', $order->user->id) }}" class="btn btn-secondary">
                         💬 Message Client
                     </a>
