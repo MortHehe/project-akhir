@@ -128,13 +128,13 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . Auth::id(),
             'phone' => 'nullable|string|max:20',
             'location' => 'nullable|string|max:255',
+            'bio' => 'nullable|string|max:1000',
         ]);
-        
+
         Auth::user()->update($validated);
-        
+
         return back()->with('success', 'Profile updated successfully!');
     }
     
@@ -145,14 +145,13 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'company' => 'nullable|string|max:255',
-            'industry' => 'nullable|string|max:100',
-            'company_size' => 'nullable|string|max:50',
+            'company_address' => 'nullable|string|max:500',
+            'tax_id' => 'nullable|string|max:50',
             'website' => 'nullable|url|max:255',
-            'company_description' => 'nullable|string|max:2000',
         ]);
-        
+
         Auth::user()->update($validated);
-        
+
         return back()->with('success', 'Company information updated successfully!');
     }
     

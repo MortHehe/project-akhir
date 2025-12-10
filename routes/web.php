@@ -25,8 +25,25 @@ Route::get('/welcome', function () {
     return view('welcome');
 })->name('welcome');
 
-// Public freelancer browsing
-Route::get('/find-freelancers', [UserController::class, 'findFreelancers'])->name('find-freelancers');
+// Public freelancer browsing (requires authentication)
+Route::get('/find-freelancers', [UserController::class, 'findFreelancers'])->name('find-freelancers')->middleware('auth');
+
+// Static Pages
+Route::get('/about', function () {
+    return view('pages.about');
+})->name('about');
+
+Route::get('/contact', function () {
+    return view('pages.contact');
+})->name('contact');
+
+Route::get('/terms', function () {
+    return view('pages.terms');
+})->name('terms');
+
+Route::get('/privacy', function () {
+    return view('pages.privacy');
+})->name('privacy');
 
 /*
 |--------------------------------------------------------------------------

@@ -570,7 +570,7 @@
 <body>
     <!-- Header -->
     <div class="header">
-        <div class="logo">⚫ WORKZY</div>
+        <div class="logo" onclick="window.location='{{ route('home') }}'" style="cursor: pointer;">⚫ WORKZY</div>
         <div class="nav">
             <a href="/">Explore</a>
             <a href="{{ route('find-freelancers') }}">Find Freelancers</a>
@@ -652,9 +652,23 @@
 
         <div class="freelancers-grid">
             @php
+                // Try to get top rated freelancers with reviews
                 $topFreelancers = App\Models\User::where('role', 'freelancer')
+                    ->withCount('reviews')
+                    ->withAvg('reviews', 'rating')
+                    ->having('reviews_count', '>', 0)
+                    ->orderByDesc('reviews_avg_rating')
+                    ->orderByDesc('reviews_count')
                     ->take(3)
                     ->get();
+
+                // Fallback: if no freelancers with reviews, get latest freelancers
+                if ($topFreelancers->isEmpty()) {
+                    $topFreelancers = App\Models\User::where('role', 'freelancer')
+                        ->latest()
+                        ->take(3)
+                        ->get();
+                }
             @endphp
 
             @forelse($topFreelancers as $freelancer)
@@ -773,10 +787,10 @@
             <div class="footer-section">
                 <h4>Company</h4>
                 <ul>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Contact</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="{{ route('about') }}">About Us</a></li>
+                    <li><a href="{{ route('contact') }}">Contact</a></li>
+                    <li><a href="{{ route('terms') }}">Terms of Service</a></li>
+                    <li><a href="{{ route('privacy') }}">Privacy Policy</a></li>
                 </ul>
             </div>
         </div>

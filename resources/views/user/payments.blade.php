@@ -5,79 +5,173 @@
 
 @section('additional-styles')
 <style>
+    /* Transaction Item */
     .payment-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
         background: white;
-        padding: 25px;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-        margin-bottom: 20px;
-        transition: all 0.3s;
-        border-left: 4px solid transparent;
+        box-shadow: none;
+        position: relative;
+        overflow: hidden;
     }
 
     .payment-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.15);
-        border-left-color: #667eea;
+        border-color: #667eea;
+        background: #fafbfc;
     }
 
     .payment-header {
         display: flex;
-        justify-content: space-between;
+        gap: 16px;
         align-items: center;
-        margin-bottom: 15px;
+        flex: 1;
+    }
+
+    .payment-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        background: #f3f4f6;
+        flex-shrink: 0;
+    }
+
+    .payment-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .payment-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1a1a1a;
-    }
-
-    .payment-amount {
-        font-size: 24px;
-        font-weight: 800;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #1f2937;
+        line-height: 1.2;
     }
 
     .payment-meta {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-        font-size: 14px;
-        color: #666;
-        margin-top: 10px;
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 400;
+        line-height: 1.2;
     }
 
-    .payment-meta span {
+    .payment-right {
+        text-align: right;
         display: flex;
-        align-items: center;
-        gap: 6px;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+    }
+
+    .payment-amount {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: #1f2937;
+    }
+
+    .payment-amount.negative {
+        color: #dc2626;
+    }
+
+    .payment-amount.positive {
+        color: #16a34a;
     }
 
     .status-badge {
-        padding: 6px 14px;
-        border-radius: 20px;
         font-size: 12px;
-        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        font-weight: 600;
+        text-transform: capitalize;
+        letter-spacing: 0;
+    }
+
+    .filter-select {
+        padding: 10px 18px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: white;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    @media (max-width: 768px) {
+        .payment-card {
+            flex-direction: column;
+            gap: 20px;
+            text-align: left;
+        }
+
+        .payment-header {
+            width: 100%;
+        }
+
+        .payment-right {
+            text-align: left;
+            width: 100%;
+        }
     }
 
     .status-completed {
-        background: linear-gradient(135deg, #d4edda, #c3e6cb);
-        color: #155724;
+        background: #dcfce7;
+        color: #166534;
     }
 
     .status-pending {
-        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-        color: #856404;
+        background: #fef3c7;
+        color: #92400e;
     }
 
     .status-failed {
-        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-        color: #721c24;
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-accepted {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-in_progress {
+        background: #e0e7ff;
+        color: #4338ca;
+    }
+
+    .status-delivered {
+        background: #e9d5ff;
+        color: #6b21a8;
+    }
+
+    .status-paid {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
     }
 
     .stats-row {
@@ -188,46 +282,38 @@
 
     <!-- Payment History -->
     <div class="card">
-        <h2>📜 Payment History</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2>💼 Payment History</h2>
+            <select class="filter-select">
+                <option value="all">All Time</option>
+                <option value="month">This Month</option>
+                <option value="week">This Week</option>
+                <option value="today">Today</option>
+            </select>
+        </div>
         <p style="color: #666; margin-bottom: 25px;">All your payment transactions</p>
 
         @if($paidOrders->count() > 0)
             @foreach($paidOrders as $order)
                 <div class="payment-card">
                     <div class="payment-header">
-                        <div>
+                        <div class="payment-icon">💳</div>
+                        <div class="payment-info">
                             <div class="payment-title">{{ $order->job_title }}</div>
-                            <div style="color: #999; font-size: 13px; margin-top: 5px;">
-                                Order #{{ $order->id }}
-                                @if($order->freelancer)
-                                    • Freelancer: {{ $order->freelancer->name }}
-                                @endif
+                            <div class="payment-meta">
+                                Order #{{ $order->id }} • {{ $order->freelancer ? $order->freelancer->name : 'Unassigned' }} • {{ $order->paid_at ? $order->paid_at->format('d M Y') : $order->created_at->format('d M Y') }}
                             </div>
                         </div>
-                        <div>
-                            <div class="payment-amount">${{ number_format($order->price, 2) }}</div>
-                            <span class="status-badge status-{{ $order->status === 'completed' ? 'completed' : 'pending' }}">
+                    </div>
+                    <div class="payment-right">
+                        <div class="payment-amount negative">-${{ number_format($order->price, 2) }}</div>
+                        <span class="status-badge status-{{ $order->status }}">
+                            @if($order->status === 'completed')
+                                ✓ Completed
+                            @else
                                 {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="payment-meta">
-                        <span>📅 Paid: {{ $order->paid_at ? $order->paid_at->format('M d, Y') : 'Pending' }}</span>
-                        @if($order->payment_method)
-                            <span>💳 Method: {{ ucfirst($order->payment_method) }}</span>
-                        @endif
-                        @if($order->deadline)
-                            <span>⏰ Deadline: {{ \Carbon\Carbon::parse($order->deadline)->format('M d, Y') }}</span>
-                        @endif
-                        <span>🕒 Created: {{ $order->created_at->format('M d, Y') }}</span>
-                    </div>
-
-                    <div style="margin-top: 15px; display: flex; gap: 10px;">
-                        <a href="{{ route('orders.show', $order) }}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;">View Order</a>
-                        @if($order->freelancer)
-                            <a href="{{ route('chat.show', $order->freelancer_id) }}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;">💬 Message</a>
-                        @endif
+                            @endif
+                        </span>
                     </div>
                 </div>
             @endforeach
@@ -248,27 +334,22 @@
             <p style="color: #666; margin-bottom: 25px;">Orders awaiting payment</p>
 
             @foreach($pendingOrders as $order)
-                <div class="payment-card" style="background: #fffef5;">
+                <div class="payment-card" style="background: #fffef5; border-color: #ffeaa7;">
                     <div class="payment-header">
-                        <div>
+                        <div class="payment-icon" style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 193, 7, 0.2));">⏳</div>
+                        <div class="payment-info">
                             <div class="payment-title">{{ $order->job_title }}</div>
-                            <div style="color: #999; font-size: 13px; margin-top: 5px;">Order #{{ $order->id }}</div>
-                        </div>
-                        <div>
-                            <div class="payment-amount">${{ number_format($order->price, 2) }}</div>
-                            <span class="status-badge status-pending">Pending Payment</span>
+                            <div class="payment-meta">
+                                Order #{{ $order->id }} • {{ $order->created_at->format('d M Y') }}
+                                @if($order->deadline)
+                                    • Deadline: {{ \Carbon\Carbon::parse($order->deadline)->format('d M Y') }}
+                                @endif
+                            </div>
                         </div>
                     </div>
-
-                    <div class="payment-meta">
-                        <span>📅 Created: {{ $order->created_at->format('M d, Y H:i') }}</span>
-                        @if($order->deadline)
-                            <span>⏰ Deadline: {{ \Carbon\Carbon::parse($order->deadline)->format('M d, Y') }}</span>
-                        @endif
-                    </div>
-
-                    <div style="margin-top: 15px;">
-                        <a href="{{ route('orders.payment', $order) }}" class="btn btn-primary" style="padding: 10px 20px;">💳 Complete Payment Now</a>
+                    <div class="payment-right">
+                        <div class="payment-amount" style="color: #ff9800;">-${{ number_format($order->price, 2) }}</div>
+                        <a href="{{ route('orders.payment', $order) }}" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px; display: inline-block; text-decoration: none;">💳 Pay Now</a>
                     </div>
                 </div>
             @endforeach

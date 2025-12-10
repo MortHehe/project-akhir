@@ -507,7 +507,7 @@
                             View Details
                         </button>
                     @elseif($order->status == 'accepted' || $order->status == 'in_progress')
-                        <button class="btn btn-primary" onclick="window.location.href='/orders/{{ $order->id }}/deliver'">
+                        <button class="btn btn-primary" onclick="window.location.href='/orders/{{ $order->id }}'">
                             Deliver Work
                         </button>
                         <button class="btn btn-outline" onclick="window.location.href='/messages/order/{{ $order->id }}'">

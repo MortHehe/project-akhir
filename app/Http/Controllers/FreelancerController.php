@@ -208,12 +208,15 @@ class FreelancerController extends Controller
     public function updateSkills(Request $request)
     {
         $validated = $request->validate([
-            'skills' => 'array',
-            'skills.*' => 'string|max:50',
+            'skills' => 'nullable|string',
         ]);
 
-        // Store skills as JSON or in a separate table
-        Auth::user()->update(['skills' => json_encode($validated['skills'] ?? [])]);
+        // Convert comma-separated string to array
+        $skillsString = $validated['skills'] ?? '';
+        $skillsArray = array_filter(array_map('trim', explode(',', $skillsString)));
+
+        // Store skills as JSON
+        Auth::user()->update(['skills' => json_encode($skillsArray)]);
 
         return back()->with('success', 'Skills updated successfully!');
     }
