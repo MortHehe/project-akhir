@@ -28,6 +28,20 @@ class FreelancerController extends Controller
         return view('freelancer.index');
     }
 
+    /**
+     * Browse available jobs/orders
+     */
+    public function browseJobs()
+    {
+        $availableOrders = \App\Models\Order::whereNull('freelancer_id')
+            ->where('status', 'pending')
+            ->with('user')
+            ->latest()
+            ->paginate(12);
+
+        return view('freelancer.browse-jobs', compact('availableOrders'));
+    }
+
     // ==================== SETTINGS ====================
     
     /**

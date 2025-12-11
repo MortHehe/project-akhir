@@ -93,6 +93,7 @@
         font-size: 13px;
         font-weight: 600;
         border: 2px solid #667eea;
+        text-transform: uppercase;
     }
 
     .btn-group {
@@ -216,7 +217,23 @@
 
                     <div class="form-group">
                         <label>Your Skills (comma separated)</label>
-                        <textarea name="skills" rows="3" placeholder="e.g., PHP, Laravel, JavaScript, React, Vue.js">{{ is_array(auth()->user()->skills) ? implode(', ', auth()->user()->skills) : (auth()->user()->skills ?? '') }}</textarea>
+                        @php
+                            $userSkills = auth()->user()->skills;
+
+                            // If it's a string, try to decode JSON
+                            if (is_string($userSkills)) {
+                                $decoded = json_decode($userSkills, true);
+                                $userSkills = is_array($decoded) ? $decoded : explode(',', $userSkills);
+                            }
+
+                            // If it's an array, implode with commas
+                            if (is_array($userSkills)) {
+                                $userSkills = implode(', ', array_map('trim', $userSkills));
+                            } else {
+                                $userSkills = $userSkills ?? '';
+                            }
+                        @endphp
+                        <textarea name="skills" rows="3" placeholder="e.g., PHP, Laravel, JavaScript, React, Vue.js">{{ $userSkills }}</textarea>
                         <small style="color: #999; font-size: 12px; display: block; margin-top: 5px;">Separate each skill with a comma</small>
                     </div>
 

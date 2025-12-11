@@ -539,7 +539,7 @@
             <div class="empty-state">
                 <h3>📦 No orders yet</h3>
                 <p style="color: #666; margin-bottom: 20px;">Orders from clients will appear here</p>
-                <button class="btn btn-primary" onclick="window.location.href='/browse-jobs'">
+                <button class="btn btn-primary" onclick="window.location.href='{{ route('freelancer.browse.jobs') }}'">
                     Browse Available Jobs
                 </button>
             </div>

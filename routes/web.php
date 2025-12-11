@@ -171,6 +171,7 @@ Route::middleware(['auth', 'role:freelancer'])->prefix('freelancer')->group(func
 
     // Orders
     Route::get('/orders', [FreelancerController::class, 'index'])->name('freelancer.index');
+    Route::get('/browse-jobs', [FreelancerController::class, 'browseJobs'])->name('freelancer.browse.jobs');
 
     // Profile
     Route::get('/profile', [FreelancerController::class, 'profile'])->name('freelancer.myprofile');

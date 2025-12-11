@@ -278,6 +278,24 @@
             font-weight: 600;
         }
 
+        .freelancer-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+
+        .skill-tag {
+            background: #f0f0ff;
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
         /* Order Summary */
         .order-summary {
             background: #f8f9ff;
@@ -522,6 +540,33 @@
                                         <div class="freelancer-name">{{ $freelancer->name }}</div>
                                         <div class="freelancer-title">{{ $freelancer->title ?? 'Professional Freelancer' }}</div>
                                         <div class="freelancer-rating">⭐ {{ number_format($freelancer->getAverageRatingAttribute(), 1) }} ({{ $freelancer->getTotalReviewsAttribute() }} reviews)</div>
+
+                                        @php
+                                            // Parse skills properly
+                                            $skills = $freelancer->skills;
+
+                                            // If it's a string, try to decode JSON
+                                            if (is_string($skills)) {
+                                                $decoded = json_decode($skills, true);
+                                                $skills = is_array($decoded) ? $decoded : explode(',', $skills);
+                                            }
+
+                                            // If not an array, make it one
+                                            if (!is_array($skills)) {
+                                                $skills = [];
+                                            }
+
+                                            // Clean up skills - remove empty values and trim
+                                            $skills = array_filter(array_map('trim', $skills));
+                                        @endphp
+
+                                        @if(!empty($skills))
+                                            <div class="freelancer-skills">
+                                                @foreach(array_slice($skills, 0, 3) as $skill)
+                                                    <span class="skill-tag">{{ $skill }}</span>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>

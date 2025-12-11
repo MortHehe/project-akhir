@@ -204,6 +204,7 @@
             font-size: 12px;
             font-weight: 600;
             border-radius: 20px;
+            text-transform: uppercase;
         }
 
         .freelancer-stats {
@@ -415,13 +416,29 @@
                             </div>
                         @endif
 
-                        @if($freelancer->skills)
+                        @php
+                            // Parse skills properly
+                            $skills = $freelancer->skills;
+
+                            // If it's a string, try to decode JSON
+                            if (is_string($skills)) {
+                                $decoded = json_decode($skills, true);
+                                $skills = is_array($decoded) ? $decoded : explode(',', $skills);
+                            }
+
+                            // If not an array, make it one
+                            if (!is_array($skills)) {
+                                $skills = [];
+                            }
+
+                            // Clean up skills - remove empty values and trim
+                            $skills = array_filter(array_map('trim', $skills));
+                        @endphp
+
+                        @if(!empty($skills))
                             <div class="freelancer-skills">
-                                @php
-                                    $skills = is_string($freelancer->skills) ? explode(',', $freelancer->skills) : $freelancer->skills;
-                                @endphp
                                 @foreach(array_slice($skills, 0, 4) as $skill)
-                                    <span class="skill-tag">{{ trim($skill) }}</span>
+                                    <span class="skill-tag">{{ $skill }}</span>
                                 @endforeach
                                 @if(count($skills) > 4)
                                     <span class="skill-tag">+{{ count($skills) - 4 }} more</span>

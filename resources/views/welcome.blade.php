@@ -406,6 +406,7 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+            text-transform: uppercase;
         }
 
         .freelancer-actions {
@@ -699,15 +700,36 @@
                         </div>
 
                         @php
-                            $skills = is_string($freelancer->skills) ? json_decode($freelancer->skills, true) : ($freelancer->skills ?? ['Freelancer']);
-                            if (!is_array($skills)) $skills = ['Freelancer'];
+                            // Parse skills properly
+                            $skills = $freelancer->skills;
+
+                            // If it's a string, try to decode JSON
+                            if (is_string($skills)) {
+                                $decoded = json_decode($skills, true);
+                                $skills = is_array($decoded) ? $decoded : explode(',', $skills);
+                            }
+
+                            // If not an array, make it one
+                            if (!is_array($skills)) {
+                                $skills = ['Freelancer'];
+                            }
+
+                            // Clean up skills - remove empty values and trim
+                            $skills = array_filter(array_map('trim', $skills));
+
+                            // If empty after filtering, set default
+                            if (empty($skills)) {
+                                $skills = ['Freelancer'];
+                            }
                         @endphp
 
-                        <div class="freelancer-skills">
-                            @foreach(array_slice($skills, 0, 3) as $skill)
-                                <span class="skill-tag">{{ $skill }}</span>
-                            @endforeach
-                        </div>
+                        @if(!empty($skills))
+                            <div class="freelancer-skills">
+                                @foreach(array_slice($skills, 0, 3) as $skill)
+                                    <span class="skill-tag">{{ $skill }}</span>
+                                @endforeach
+                            </div>
+                        @endif
 
                         <div class="freelancer-actions">
                             @auth

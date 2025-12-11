@@ -184,6 +184,7 @@
         font-size: 14px;
         font-weight: 700;
         border: 2px solid #667eea;
+        text-transform: uppercase;
     }
 
     .review-card {
